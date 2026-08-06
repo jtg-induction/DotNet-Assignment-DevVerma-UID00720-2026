@@ -12,10 +12,18 @@ namespace Assignment3.Services.Implementations
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IJwtService _jwtService;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(
+            IUserRepository userRepository, 
+            IJwtService jwtService,
+            IRefreshTokenRepository refreshTokenRepository
+            )
         {
             _userRepository = userRepository;
+            _jwtService = jwtService;
+            _refreshTokenRepository = refreshTokenRepository;
         }
 
         public async Task<ApiResponse<object>> SignUpAsync(SignUpRequestDto request)
@@ -64,6 +72,93 @@ namespace Assignment3.Services.Implementations
                     Data = null
                 };
             }
+        }
+
+        public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
+        {
+            var user = await _userRepository.GetUserByEmailAsync(request.Email);
+
+            if (user == null)
+                return null;
+
+            bool isPasswordCorrect =
+                BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
+
+            if (!isPasswordCorrect)
+                return null;
+
+            string accessToken =
+                _jwtService.GenerateAccessToken(user);
+
+            string refreshToken =
+                _jwtService.GenerateRefreshToken();
+
+            await _refreshTokenRepository.SaveRefreshTokenAsync(
+                new RefreshToken
+                {
+                    UserId = user.Id,
+                    Token = refreshToken,
+                    ExpiresAt = DateTime.UtcNow.AddDays(30),
+                    CreatedAt = DateTime.UtcNow
+                });
+
+            return new LoginResponseDto
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
+            };
+        }
+
+        public async Task<bool> LogoutAsync(LogoutRequestDto request)
+        {
+            var refreshToken = await _refreshTokenRepository
+                .GetRefreshTokenAsync(request.RefreshToken);
+
+            if (refreshToken == null)
+                return false;
+
+            await _refreshTokenRepository
+                .DeleteRefreshTokenAsync(refreshToken);
+
+            return true;
+        }
+
+        public async Task<RefreshTokenResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request)
+        {
+            var refreshToken = await _refreshTokenRepository
+                .GetRefreshTokenAsync(request.RefreshToken);
+
+            if (refreshToken == null)
+                return null;
+
+            if (refreshToken.ExpiresAt <= DateTime.UtcNow)
+            {
+                await _refreshTokenRepository.DeleteRefreshTokenAsync(refreshToken);
+                return null;
+            }
+
+            var user = refreshToken.User;
+
+            string newAccessToken = _jwtService.GenerateAccessToken(user);
+
+            string newRefreshToken = _jwtService.GenerateRefreshToken();
+
+            await _refreshTokenRepository.DeleteRefreshTokenAsync(refreshToken);
+
+            await _refreshTokenRepository.SaveRefreshTokenAsync(
+                new RefreshToken
+                {
+                    UserId = user.Id,
+                    Token = newRefreshToken,
+                    ExpiresAt = DateTime.UtcNow.AddDays(30),
+                    CreatedAt = DateTime.UtcNow
+                });
+
+            return new RefreshTokenResponseDto
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken
+            };
         }
     }
 }

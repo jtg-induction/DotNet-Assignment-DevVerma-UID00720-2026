@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Web.Http;
 using Assignment3.DTOs;
+using Assignment3.DTOs.Common;
 using Assignment3.Services.Interfaces;
 using System.Net;
 
@@ -33,6 +34,95 @@ namespace Assignment3.Controllers
             }
 
             return Ok(response);
+        }
+
+        [HttpPost]
+        [Route("login")]
+        public async Task<IHttpActionResult> Login(LoginRequestDto request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var response = await _userService.LoginAsync(request);
+
+            if (response == null)
+            {
+                return Content(
+                    HttpStatusCode.Unauthorized,
+                    new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Invalid email or password.",
+                        Data = null
+                    });
+            }
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Login successful.",
+                Data = response
+            });
+        }
+
+        [HttpPost]
+        [Route("logout")]
+        public async Task<IHttpActionResult> Logout(LogoutRequestDto request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            bool isLoggedOut = await _userService.LogoutAsync(request);
+
+            if (!isLoggedOut)
+            {
+                return Content(
+                    HttpStatusCode.Unauthorized,
+                    new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Invalid refresh token.",
+                        Data = null
+                    });
+            }
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Logged out successfully.",
+                Data = null
+            });
+        }
+
+        [HttpPost]
+        [Route("refresh-token")]
+        public async Task<IHttpActionResult> RefreshToken(RefreshTokenRequestDto request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var response = await _userService.RefreshTokenAsync(request);
+
+            if (response == null)
+            {
+                return Content(
+                    HttpStatusCode.Unauthorized,
+                    new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Invalid or expired refresh token.",
+                        Data = null
+                    });
+            }
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Token refreshed successfully.",
+                Data = response
+            });
         }
     }
 }
