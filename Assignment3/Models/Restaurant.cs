@@ -40,6 +40,7 @@ namespace Assignment3.Models
 
         public Restaurant()
         {
+            IsActive = true;
             MenuItems = new HashSet<MenuItem>();
             Orders = new HashSet<Order>();
             RestaurantOwners = new HashSet<RestaurantOwner>();
