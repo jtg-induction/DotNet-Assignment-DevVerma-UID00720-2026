@@ -176,6 +176,9 @@
     <Compile Include="DTOs\RefreshTokenRequestDto.cs" />
     <Compile Include="DTOs\RefreshTokenResponseDto.cs" />
     <Compile Include="DTOs\SignUpRequestDto.cs" />
+    <Compile Include="Enums\UserRole.cs" />
+    <Compile Include="Filters\GlobalExceptionFilter.cs" />
+    <Compile Include="Filters\ValidateModelAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

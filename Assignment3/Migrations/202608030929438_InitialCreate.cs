@@ -10,137 +10,137 @@
             CreateTable(
                 "dbo.Addresses",
                 c => new
-                    {
-                        Id = c.Long(nullable: false, identity: true),
-                        UserId = c.Long(),
-                        BuildingNumber = c.String(nullable: false, maxLength: 20),
-                        Locality = c.String(nullable: false, maxLength: 100),
-                        City = c.String(nullable: false, maxLength: 100),
-                        State = c.String(nullable: false, maxLength: 100),
-                        Country = c.String(nullable: false, maxLength: 100),
-                        PostalCode = c.String(nullable: false, maxLength: 20),
-                        CreatedAt = c.DateTime(nullable: false),
-                        UpdatedAt = c.DateTime(),
-                    })
+                {
+                    Id = c.Long(nullable: false, identity: true),
+                    UserId = c.Long(),
+                    BuildingNumber = c.String(nullable: false, maxLength: 20),
+                    Locality = c.String(nullable: false, maxLength: 100),
+                    City = c.String(nullable: false, maxLength: 100),
+                    State = c.String(nullable: false, maxLength: 100),
+                    Country = c.String(nullable: false, maxLength: 100),
+                    PostalCode = c.String(nullable: false, maxLength: 20),
+                    CreatedAt = c.DateTime(nullable: false),
+                    UpdatedAt = c.DateTime(),
+                })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.Users", t => t.UserId)
                 .Index(t => t.UserId);
-            
+
             CreateTable(
                 "dbo.Users",
                 c => new
-                    {
-                        Id = c.Long(nullable: false, identity: true),
-                        Name = c.String(nullable: false, maxLength: 100),
-                        Email = c.String(nullable: false, maxLength: 255),
-                        Password = c.String(nullable: false, maxLength: 255),
-                        Role = c.String(nullable: false, maxLength: 20),
-                        IsActive = c.Boolean(nullable: false),
-                        Balance = c.Decimal(nullable: false, precision: 18, scale: 2),
-                        CreatedAt = c.DateTime(nullable: false),
-                        UpdatedAt = c.DateTime(),
-                    })
+                {
+                    Id = c.Long(nullable: false, identity: true),
+                    Name = c.String(nullable: false, maxLength: 100),
+                    Email = c.String(nullable: false, maxLength: 255),
+                    Password = c.String(nullable: false, maxLength: 255),
+                    Role = c.String(nullable: false, maxLength: 20),
+                    IsActive = c.Boolean(nullable: false),
+                    Balance = c.Decimal(nullable: false, precision: 18, scale: 2),
+                    CreatedAt = c.DateTime(nullable: false),
+                    UpdatedAt = c.DateTime(),
+                })
                 .PrimaryKey(t => t.Id);
-            
+
             CreateTable(
                 "dbo.Orders",
                 c => new
-                    {
-                        Id = c.Long(nullable: false, identity: true),
-                        UserId = c.Long(nullable: false),
-                        RestaurantId = c.Int(nullable: false),
-                        Status = c.String(nullable: false, maxLength: 20),
-                        TotalAmount = c.Decimal(nullable: false, precision: 18, scale: 2),
-                        BuildingNumber = c.String(nullable: false, maxLength: 20),
-                        Locality = c.String(nullable: false, maxLength: 100),
-                        City = c.String(nullable: false, maxLength: 100),
-                        State = c.String(nullable: false, maxLength: 100),
-                        Country = c.String(nullable: false, maxLength: 100),
-                        PostalCode = c.String(nullable: false, maxLength: 20),
-                        CreatedAt = c.DateTime(nullable: false),
-                        UpdatedAt = c.DateTime(),
-                    })
+                {
+                    Id = c.Long(nullable: false, identity: true),
+                    UserId = c.Long(nullable: false),
+                    RestaurantId = c.Int(nullable: false),
+                    Status = c.String(nullable: false, maxLength: 20),
+                    TotalAmount = c.Decimal(nullable: false, precision: 18, scale: 2),
+                    BuildingNumber = c.String(nullable: false, maxLength: 20),
+                    Locality = c.String(nullable: false, maxLength: 100),
+                    City = c.String(nullable: false, maxLength: 100),
+                    State = c.String(nullable: false, maxLength: 100),
+                    Country = c.String(nullable: false, maxLength: 100),
+                    PostalCode = c.String(nullable: false, maxLength: 20),
+                    CreatedAt = c.DateTime(nullable: false),
+                    UpdatedAt = c.DateTime(),
+                })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.Restaurants", t => t.RestaurantId)
                 .ForeignKey("dbo.Users", t => t.UserId)
                 .Index(t => t.UserId)
                 .Index(t => t.RestaurantId);
-            
+
             CreateTable(
                 "dbo.OrderItems",
                 c => new
-                    {
-                        Id = c.Long(nullable: false, identity: true),
-                        OrderId = c.Long(nullable: false),
-                        MenuItemId = c.Long(nullable: false),
-                        Quantity = c.Int(nullable: false),
-                        UnitPrice = c.Decimal(nullable: false, precision: 18, scale: 2),
-                        CreatedAt = c.DateTime(nullable: false),
-                        UpdatedAt = c.DateTime(),
-                    })
+                {
+                    Id = c.Long(nullable: false, identity: true),
+                    OrderId = c.Long(nullable: false),
+                    MenuItemId = c.Long(nullable: false),
+                    Quantity = c.Int(nullable: false),
+                    UnitPrice = c.Decimal(nullable: false, precision: 18, scale: 2),
+                    CreatedAt = c.DateTime(nullable: false),
+                    UpdatedAt = c.DateTime(),
+                })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.MenuItems", t => t.MenuItemId)
                 .ForeignKey("dbo.Orders", t => t.OrderId)
                 .Index(t => t.OrderId)
                 .Index(t => t.MenuItemId);
-            
+
             CreateTable(
                 "dbo.MenuItems",
                 c => new
-                    {
-                        Id = c.Long(nullable: false, identity: true),
-                        RestaurantId = c.Int(nullable: false),
-                        Name = c.String(nullable: false, maxLength: 100),
-                        Price = c.Decimal(nullable: false, precision: 18, scale: 2),
-                        Description = c.String(maxLength: 500),
-                        CreatedAt = c.DateTime(nullable: false),
-                        UpdatedAt = c.DateTime(),
-                        Stock = c.Int(nullable: false),
-                    })
+                {
+                    Id = c.Long(nullable: false, identity: true),
+                    RestaurantId = c.Int(nullable: false),
+                    Name = c.String(nullable: false, maxLength: 100),
+                    Price = c.Decimal(nullable: false, precision: 18, scale: 2),
+                    Description = c.String(maxLength: 500),
+                    CreatedAt = c.DateTime(nullable: false),
+                    UpdatedAt = c.DateTime(),
+                    Stock = c.Int(nullable: false),
+                })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.Restaurants", t => t.RestaurantId)
                 .Index(t => t.RestaurantId);
-            
+
             CreateTable(
                 "dbo.Restaurants",
                 c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        Name = c.String(nullable: false, maxLength: 100),
-                        Email = c.String(nullable: false, maxLength: 255),
-                        IsActive = c.Boolean(nullable: false),
-                        AddressId = c.Long(nullable: false),
-                        CreatedAt = c.DateTime(nullable: false),
-                        UpdatedAt = c.DateTime(),
-                    })
+                {
+                    Id = c.Int(nullable: false, identity: true),
+                    Name = c.String(nullable: false, maxLength: 100),
+                    Email = c.String(nullable: false, maxLength: 255),
+                    IsActive = c.Boolean(nullable: false),
+                    AddressId = c.Long(nullable: false),
+                    CreatedAt = c.DateTime(nullable: false),
+                    UpdatedAt = c.DateTime(),
+                })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.Addresses", t => t.AddressId)
-                .Index(t => t.AddressId, unique:true, name: "IX_Restaurant_AddressId");
-            
+                .Index(t => t.AddressId, unique: true, name: "IX_Restaurant_AddressId");
+
             CreateTable(
                 "dbo.RestaurantOwners",
                 c => new
-                    {
-                        UserId = c.Long(nullable: false),
-                        RestaurantId = c.Int(nullable: false),
-                        CreatedAt = c.DateTime(nullable: false),
-                    })
+                {
+                    UserId = c.Long(nullable: false),
+                    RestaurantId = c.Int(nullable: false),
+                    CreatedAt = c.DateTime(nullable: false),
+                })
                 .PrimaryKey(t => new { t.UserId, t.RestaurantId })
                 .ForeignKey("dbo.Restaurants", t => t.RestaurantId)
                 .ForeignKey("dbo.Users", t => t.UserId)
                 .Index(t => t.UserId)
                 .Index(t => t.RestaurantId);
-            
+
             CreateTable(
                 "dbo.RefreshTokens",
                 c => new
-                    {
-                        Id = c.Long(nullable: false, identity: true),
-                        UserId = c.Long(nullable: false),
-                        Token = c.String(nullable: false, maxLength: 500),
-                        ExpiresAt = c.DateTime(nullable: false),
-                        CreatedAt = c.DateTime(nullable: false),
-                    })
+                {
+                    Id = c.Long(nullable: false, identity: true),
+                    UserId = c.Long(nullable: false),
+                    Token = c.String(nullable: false, maxLength: 500),
+                    ExpiresAt = c.DateTime(nullable: false),
+                    CreatedAt = c.DateTime(nullable: false),
+                })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.Users", t => t.UserId)
                 .Index(t => t.UserId);
@@ -150,30 +150,62 @@
 
             // User Role = customer
             Sql(@"
-            ALTER TABLE dbo.Users
-            ADD CONSTRAINT DF_Users_Role
-            DEFAULT ('customer') FOR Role
+            IF NOT EXISTS
+            (
+                SELECT 1
+                FROM sys.default_constraints
+                WHERE name = 'DF_Users_Role'
+            )
+            BEGIN
+                ALTER TABLE dbo.Users
+                ADD CONSTRAINT DF_Users_Role
+                DEFAULT ('customer') FOR Role
+            END
             ");
 
             // User IsActive = true
             Sql(@"
-            ALTER TABLE dbo.Users
-            ADD CONSTRAINT DF_Users_IsActive
-            DEFAULT (1) FOR IsActive
+            IF NOT EXISTS
+            (
+                SELECT 1
+                FROM sys.default_constraints
+                WHERE name = 'DF_Users_IsActive'
+            )
+            BEGIN
+                ALTER TABLE dbo.Users
+                ADD CONSTRAINT DF_Users_IsActive
+                DEFAULT (1) FOR IsActive
+            END
             ");
 
             // Restaurant IsActive = true
             Sql(@"
-            ALTER TABLE dbo.Restaurants
-            ADD CONSTRAINT DF_Restaurants_IsActive
-            DEFAULT (1) FOR IsActive
+            IF NOT EXISTS
+            (
+                SELECT 1
+                FROM sys.default_constraints
+                WHERE name = 'DF_Restaurants_IsActive'
+            )
+            BEGIN
+                ALTER TABLE dbo.Restaurants
+                ADD CONSTRAINT DF_Restaurants_IsActive
+                DEFAULT (1) FOR IsActive
+            END
             ");
 
             // Order Status = placed
             Sql(@"
-            ALTER TABLE dbo.Orders
-            ADD CONSTRAINT DF_Orders_Status
-            DEFAULT ('placed') FOR Status
+            IF NOT EXISTS
+            (
+                SELECT 1
+                FROM sys.default_constraints
+                WHERE name = 'DF_Orders_Status'
+            )
+            BEGIN
+                ALTER TABLE dbo.Orders
+                ADD CONSTRAINT DF_Orders_Status
+                DEFAULT ('placed') FOR Status
+            END
             ");
 
 
@@ -182,6 +214,13 @@
 
             // User Role
             Sql(@"
+            IF NOT EXISTS
+            (
+                SELECT 1
+                FROM sys.check_constraints
+                WHERE name = 'CK_Users_Role'
+            )
+            BEGIN
                 ALTER TABLE dbo.Users
                 ADD CONSTRAINT CK_Users_Role
                 CHECK
@@ -193,10 +232,18 @@
                         'super_admin'
                     )
                 )
+            END
             ");
 
             // Order Status
             Sql(@"
+            IF NOT EXISTS
+            (
+                SELECT 1
+                FROM sys.check_constraints
+                WHERE name = 'CK_Orders_Status'
+            )
+            BEGIN
                 ALTER TABLE dbo.Orders
                 ADD CONSTRAINT CK_Orders_Status
                 CHECK
@@ -211,10 +258,11 @@
                         'cancelled'
                     )
                 )
+            END
             ");
 
 
-            
+
             // UNIQUE INDEXES
 
             // User Email should be unique
@@ -233,7 +281,8 @@
                 name: "IX_Restaurants_Email"
             );
         }
-        
+
+
         public override void Down()
         {
             // Drop Unique Indexes

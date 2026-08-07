@@ -17,7 +17,9 @@ namespace Assignment3.Repositories.Implementations
 
         public async Task<User> GetUserByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public void AddUser(User user)
