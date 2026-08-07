@@ -112,5 +112,26 @@ namespace Assignment3.Controllers
                 Data = response
             });
         }
+
+        [HttpPost]
+        [Route("deactivate")]
+        public async Task<IHttpActionResult> Deactivate(DeactivateRequestDto request)
+        {
+            string authorization = request.AccessToken;
+
+            if (string.IsNullOrWhiteSpace(authorization))
+            {
+                return Unauthorized();
+            }
+
+            var response = await _userService.DeactivateUserAsync(authorization);
+
+            if (!response.Success)
+            {
+                return Content(HttpStatusCode.BadRequest, response);
+            }
+
+            return Ok(response);
+        }
     }
 }

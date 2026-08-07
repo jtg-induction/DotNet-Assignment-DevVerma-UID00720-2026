@@ -27,6 +27,12 @@ namespace Assignment3.Repositories.Implementations
             _context.Users.Add(user);
         }
 
+        public async Task<User> GetUserByIdAsync(long userId)
+        {
+            return await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        }
+
         public async Task SaveAsync()
         {
             await _context.SaveChangesAsync();

@@ -170,6 +170,7 @@
     <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Data\FoodOrderingContext.cs" />
     <Compile Include="DTOs\Common\ApiResponse.cs" />
+    <Compile Include="DTOs\DeactivateRequestDto.cs" />
     <Compile Include="DTOs\LoginRequestDto.cs" />
     <Compile Include="DTOs\LoginResponseDto.cs" />
     <Compile Include="DTOs\LogoutRequestDto.cs" />

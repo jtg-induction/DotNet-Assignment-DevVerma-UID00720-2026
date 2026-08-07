@@ -68,7 +68,7 @@ namespace Assignment3.Services.Implementations
         {
             var user = await _userRepository.GetUserByEmailAsync(request.Email);
 
-            if (user == null)
+            if (user == null || !user.IsActive)
                 return null;
 
             bool isPasswordCorrect =
@@ -148,6 +148,46 @@ namespace Assignment3.Services.Implementations
             {
                 AccessToken = newAccessToken,
                 RefreshToken = newRefreshToken
+            };
+        }
+
+        public async Task<ApiResponse<object>> DeactivateUserAsync(string accessToken)
+        {
+            long userId = _jwtService.GetUserIdFromToken(accessToken);
+
+            var user = await _userRepository.GetUserByIdAsync(userId);
+
+            if (user == null)
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
+
+            if (!user.IsActive)
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "User is already deactivated."
+                };
+            }
+
+            await _refreshTokenRepository
+                .DeleteAllRefreshTokensByUserIdAsync(userId);
+
+            user.IsActive = false;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userRepository.SaveAsync();
+
+            return new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Account deactivated successfully.",
+                Data = null
             };
         }
     }

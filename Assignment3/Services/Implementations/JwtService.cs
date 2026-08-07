@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Configuration;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -52,6 +53,18 @@ namespace Assignment3.Services.Implementations
             }
 
             return Convert.ToBase64String(randomBytes);
+        }
+
+        public long GetUserIdFromToken(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var userIdClaim = jwtToken.Claims
+                .First(x => x.Type == JwtRegisteredClaimNames.Sub);
+
+            return long.Parse(userIdClaim.Value);
         }
     }
 }

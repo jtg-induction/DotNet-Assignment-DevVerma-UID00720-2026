@@ -6,5 +6,6 @@ namespace Assignment3.Services.Interfaces
     {
         string GenerateAccessToken(User user);
         string GenerateRefreshToken();
+        long GetUserIdFromToken(string token);
     }
 }
