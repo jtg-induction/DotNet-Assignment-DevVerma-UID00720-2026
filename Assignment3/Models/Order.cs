@@ -61,6 +61,7 @@ namespace Assignment3.Models
 
         public Order()
         {
+            Status = "placed";
             OrderItems = new HashSet<OrderItem>();
         }
     }

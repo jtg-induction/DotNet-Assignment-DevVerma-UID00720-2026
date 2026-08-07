@@ -46,6 +46,9 @@ namespace Assignment3.Models
 
         public User()
         {
+            Role = "customer";
+            IsActive = true;
+            Balance = 0;
             Addresses = new HashSet<Address>();
             Orders = new HashSet<Order>();
             RestaurantOwners = new HashSet<RestaurantOwner>();

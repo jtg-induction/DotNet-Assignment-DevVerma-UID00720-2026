@@ -150,30 +150,62 @@
 
             // User Role = customer
             Sql(@"
-            ALTER TABLE dbo.Users
-            ADD CONSTRAINT DF_Users_Role
-            DEFAULT ('customer') FOR Role
+            IF NOT EXISTS
+            (
+                SELECT 1
+                FROM sys.default_constraints
+                WHERE name = 'DF_Users_Role'
+            )
+            BEGIN
+                ALTER TABLE dbo.Users
+                ADD CONSTRAINT DF_Users_Role
+                DEFAULT ('customer') FOR Role
+            END
             ");
 
             // User IsActive = true
             Sql(@"
-            ALTER TABLE dbo.Users
-            ADD CONSTRAINT DF_Users_IsActive
-            DEFAULT (1) FOR IsActive
+            IF NOT EXISTS
+            (
+                SELECT 1
+                FROM sys.default_constraints
+                WHERE name = 'DF_Users_IsActive'
+            )
+            BEGIN
+                ALTER TABLE dbo.Users
+                ADD CONSTRAINT DF_Users_IsActive
+                DEFAULT (1) FOR IsActive
+            END
             ");
 
             // Restaurant IsActive = true
             Sql(@"
-            ALTER TABLE dbo.Restaurants
-            ADD CONSTRAINT DF_Restaurants_IsActive
-            DEFAULT (1) FOR IsActive
+            IF NOT EXISTS
+            (
+                SELECT 1
+                FROM sys.default_constraints
+                WHERE name = 'DF_Restaurants_IsActive'
+            )
+            BEGIN
+                ALTER TABLE dbo.Restaurants
+                ADD CONSTRAINT DF_Restaurants_IsActive
+                DEFAULT (1) FOR IsActive
+            END
             ");
 
             // Order Status = placed
             Sql(@"
-            ALTER TABLE dbo.Orders
-            ADD CONSTRAINT DF_Orders_Status
-            DEFAULT ('placed') FOR Status
+            IF NOT EXISTS
+            (
+                SELECT 1
+                FROM sys.default_constraints
+                WHERE name = 'DF_Orders_Status'
+            )
+            BEGIN
+                ALTER TABLE dbo.Orders
+                ADD CONSTRAINT DF_Orders_Status
+                DEFAULT ('placed') FOR Status
+            END
             ");
 
 
@@ -182,6 +214,13 @@
 
             // User Role
             Sql(@"
+            IF NOT EXISTS
+            (
+                SELECT 1
+                FROM sys.check_constraints
+                WHERE name = 'CK_Users_Role'
+            )
+            BEGIN
                 ALTER TABLE dbo.Users
                 ADD CONSTRAINT CK_Users_Role
                 CHECK
@@ -193,10 +232,18 @@
                         'super_admin'
                     )
                 )
+            END
             ");
 
             // Order Status
             Sql(@"
+            IF NOT EXISTS
+            (
+                SELECT 1
+                FROM sys.check_constraints
+                WHERE name = 'CK_Orders_Status'
+            )
+            BEGIN
                 ALTER TABLE dbo.Orders
                 ADD CONSTRAINT CK_Orders_Status
                 CHECK
@@ -211,10 +258,11 @@
                         'cancelled'
                     )
                 )
+            END
             ");
 
 
-            
+
             // UNIQUE INDEXES
 
             // User Email should be unique
@@ -232,8 +280,8 @@
                 unique: true,
                 name: "IX_Restaurants_Email"
             );
-        }
-        
+
+
         public override void Down()
         {
             // Drop Unique Indexes
