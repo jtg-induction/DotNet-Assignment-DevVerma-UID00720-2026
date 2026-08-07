@@ -177,6 +177,7 @@
     <Compile Include="DTOs\RefreshTokenRequestDto.cs" />
     <Compile Include="DTOs\RefreshTokenResponseDto.cs" />
     <Compile Include="DTOs\SignUpRequestDto.cs" />
+    <Compile Include="DTOs\UpdatePasswordRequestDto.cs" />
     <Compile Include="Enums\UserRole.cs" />
     <Compile Include="Filters\GlobalExceptionFilter.cs" />
     <Compile Include="Filters\ValidateModelAttribute.cs" />

@@ -133,5 +133,19 @@ namespace Assignment3.Controllers
 
             return Ok(response);
         }
+
+        [HttpPut]
+        [Route("update-password")]
+        public async Task<IHttpActionResult> UpdatePassword(UpdatePasswordRequestDto request)
+        {
+            var response = await _userService.UpdatePasswordAsync(request);
+
+            if (!response.Success)
+            {
+                return Content(HttpStatusCode.BadRequest, response);
+            }
+
+            return Ok(response);
+        }
     }
 }

@@ -11,5 +11,6 @@ namespace Assignment3.Services.Interfaces
         Task<bool> LogoutAsync(LogoutRequestDto request);
         Task<RefreshTokenResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request);
         Task<ApiResponse<object>> DeactivateUserAsync(string accessToken);
+        Task<ApiResponse<object>> UpdatePasswordAsync(UpdatePasswordRequestDto request);
     }
 }

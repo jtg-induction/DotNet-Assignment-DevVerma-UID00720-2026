@@ -190,5 +190,45 @@ namespace Assignment3.Services.Implementations
                 Data = null
             };
         }
+
+        public async Task<ApiResponse<object>> UpdatePasswordAsync(UpdatePasswordRequestDto request)
+        {
+            var user = await _userRepository.GetUserByEmailAsync(request.Email);
+
+            if (user == null)
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "User not found.",
+                    Data = null
+                };
+            }
+
+            bool isPasswordCorrect =
+                BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.Password);
+
+            if (!isPasswordCorrect)
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Current password is incorrect.",
+                    Data = null
+                };
+            }
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userRepository.SaveAsync();
+
+            return new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Password updated successfully.",
+                Data = null
+            };
+        }
     }
 }
