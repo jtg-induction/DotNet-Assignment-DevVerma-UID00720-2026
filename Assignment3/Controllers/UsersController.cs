@@ -36,8 +36,6 @@ namespace Assignment3.Controllers
         [Route("login")]
         public async Task<IHttpActionResult> Login(LoginRequestDto request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
 
             var response = await _userService.LoginAsync(request);
 
@@ -65,10 +63,6 @@ namespace Assignment3.Controllers
         [Route("logout")]
         public async Task<IHttpActionResult> Logout(LogoutRequestDto request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
 
             bool isLoggedOut = await _userService.LogoutAsync(request);
 
@@ -96,8 +90,6 @@ namespace Assignment3.Controllers
         [Route("refresh-token")]
         public async Task<IHttpActionResult> RefreshToken(RefreshTokenRequestDto request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
 
             var response = await _userService.RefreshTokenAsync(request);
 
