@@ -20,10 +20,6 @@ namespace Assignment3.Controllers
         [Route("signup")]
         public async Task<IHttpActionResult> SignUp(SignUpRequestDto request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
 
             var response = await _userService.SignUpAsync(request);
 

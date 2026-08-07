@@ -20,6 +20,7 @@ namespace Assignment3
                 defaults: new { id = RouteParameter.Optional }
             );
             config.Filters.Add(new Assignment3.Filters.GlobalExceptionFilter());
+            config.Filters.Add(new Assignment3.Filters.ValidateModelAttribute());
         }
     }
 }
