@@ -132,6 +132,8 @@
     <Compile Include="Data\FoodOrderingContext.cs" />
     <Compile Include="DTOs\Common\ApiResponse.cs" />
     <Compile Include="DTOs\SignUpRequestDto.cs" />
+    <Compile Include="Enums\UserRole.cs" />
+    <Compile Include="Filters\GlobalExceptionFilter.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
