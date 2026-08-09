@@ -170,7 +170,6 @@
     <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Data\FoodOrderingContext.cs" />
     <Compile Include="DTOs\Common\ApiResponse.cs" />
-    <Compile Include="DTOs\DeactivateRequestDto.cs" />
     <Compile Include="DTOs\LoginRequestDto.cs" />
     <Compile Include="DTOs\LoginResponseDto.cs" />
     <Compile Include="DTOs\LogoutRequestDto.cs" />
@@ -180,6 +179,7 @@
     <Compile Include="DTOs\UpdatePasswordRequestDto.cs" />
     <Compile Include="Enums\UserRole.cs" />
     <Compile Include="Filters\GlobalExceptionFilter.cs" />
+    <Compile Include="Filters\JwtAuthenticationFilter.cs" />
     <Compile Include="Filters\ValidateModelAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

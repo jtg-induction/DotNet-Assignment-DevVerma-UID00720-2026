@@ -8,6 +8,7 @@ using Assignment3.Repositories.Implementations;
 using Assignment3.Services.Interfaces;
 using Assignment3.Services.Implementations;
 using Unity.Lifetime;
+using Assignment3.Filters;
 
 namespace Assignment3
 {
@@ -46,6 +47,8 @@ namespace Assignment3
             container.RegisterType<IUserService, UserService>();
             container.RegisterType<IJwtService, JwtService>();
             container.RegisterType<IRefreshTokenRepository, RefreshTokenRepository>();
+
+            container.RegisterType<JwtAuthenticationFilter>();
         }
     }
 }

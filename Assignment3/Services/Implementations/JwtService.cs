@@ -26,7 +26,7 @@ namespace Assignment3.Services.Implementations
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(ClaimTypes.Role, user.Role),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
@@ -53,6 +53,49 @@ namespace Assignment3.Services.Implementations
             }
 
             return Convert.ToBase64String(randomBytes);
+        }
+
+        public ClaimsPrincipal ValidateToken(string token)
+        {
+            var secretKey =
+                ConfigurationManager.AppSettings["JwtSecret"];
+
+            var issuer =
+                ConfigurationManager.AppSettings["JwtIssuer"];
+
+            var audience =
+                ConfigurationManager.AppSettings["JwtAudience"];
+
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(secretKey));
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var validationParameters =
+                new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = key,
+
+                    ValidateIssuer = true,
+                    ValidIssuer = issuer,
+
+                    ValidateAudience = true,
+                    ValidAudience = audience,
+
+                    ValidateLifetime = true,
+
+                    ClockSkew = TimeSpan.Zero
+                };
+
+            SecurityToken validatedToken;
+
+            var principal = tokenHandler.ValidateToken(
+                token,
+                validationParameters,
+                out validatedToken);
+
+            return principal;
         }
 
         public long GetUserIdFromToken(string token)

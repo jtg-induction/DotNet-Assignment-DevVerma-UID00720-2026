@@ -151,9 +151,8 @@ namespace Assignment3.Services.Implementations
             };
         }
 
-        public async Task<ApiResponse<object>> DeactivateUserAsync(string accessToken)
+        public async Task<ApiResponse<object>> DeactivateUserAsync(long userId)
         {
-            long userId = _jwtService.GetUserIdFromToken(accessToken);
 
             var user = await _userRepository.GetUserByIdAsync(userId);
 

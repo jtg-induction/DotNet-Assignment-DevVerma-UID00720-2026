@@ -4,6 +4,8 @@ using Assignment3.DTOs.Common;
 using Assignment3.Services.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web.Http.Results;
 
@@ -13,15 +15,18 @@ namespace Assignment3.Tests.Controllers
     public class UsersControllerTests
     {
         private Mock<IUserService> _userServiceMock;
+        private Mock<IJwtService> _jwtServiceMock;
         private UsersController _controller;
 
         [TestInitialize]
         public void Setup()
         {
             _userServiceMock = new Mock<IUserService>();
+            _jwtServiceMock =new Mock<IJwtService>();
 
             _controller = new UsersController(
-                _userServiceMock.Object
+                _userServiceMock.Object,
+                _jwtServiceMock.Object
             );
         }
 
@@ -51,7 +56,9 @@ namespace Assignment3.Tests.Controllers
 
             var result = await _controller.SignUp(request);
 
-            Assert.IsInstanceOfType(result, typeof(OkNegotiatedContentResult<ApiResponse<object>>));
+            Assert.IsInstanceOfType(
+                result,
+                typeof(OkNegotiatedContentResult<ApiResponse<object>>));
 
             _userServiceMock.Verify(
                 x => x.SignUpAsync(request),
@@ -90,7 +97,7 @@ namespace Assignment3.Tests.Controllers
                 (NegotiatedContentResult<ApiResponse<object>>)result;
 
             Assert.AreEqual(
-                System.Net.HttpStatusCode.Conflict,
+                HttpStatusCode.Conflict,
                 conflictResult.StatusCode);
 
             _userServiceMock.Verify(
@@ -155,7 +162,7 @@ namespace Assignment3.Tests.Controllers
                 (NegotiatedContentResult<ApiResponse<object>>)result;
 
             Assert.AreEqual(
-                System.Net.HttpStatusCode.Unauthorized,
+                HttpStatusCode.Unauthorized,
                 unauthorizedResult.StatusCode);
 
             _userServiceMock.Verify(
@@ -212,7 +219,7 @@ namespace Assignment3.Tests.Controllers
                 (NegotiatedContentResult<ApiResponse<object>>)result;
 
             Assert.AreEqual(
-                System.Net.HttpStatusCode.Unauthorized,
+                HttpStatusCode.Unauthorized,
                 unauthorizedResult.StatusCode);
 
             _userServiceMock.Verify(
@@ -275,7 +282,7 @@ namespace Assignment3.Tests.Controllers
                 (NegotiatedContentResult<ApiResponse<object>>)result;
 
             Assert.AreEqual(
-                System.Net.HttpStatusCode.Unauthorized,
+                HttpStatusCode.Unauthorized,
                 unauthorizedResult.StatusCode);
 
             _userServiceMock.Verify(
@@ -289,10 +296,9 @@ namespace Assignment3.Tests.Controllers
         [TestMethod]
         public async Task Deactivate_Success_ReturnsOk()
         {
-            var request = new DeactivateRequestDto
-            {
-                AccessToken = "valid-access-token"
-            };
+            long userId = 1;
+
+            SetAuthenticatedUser(userId);
 
             var serviceResponse = new ApiResponse<object>
             {
@@ -302,37 +308,32 @@ namespace Assignment3.Tests.Controllers
             };
 
             _userServiceMock
-                .Setup(x => x.DeactivateUserAsync(request.AccessToken))
+                .Setup(x => x.DeactivateUserAsync(userId))
                 .ReturnsAsync(serviceResponse);
 
-            var result = await _controller.Deactivate(request);
+            var result = await _controller.Deactivate();
 
             Assert.IsInstanceOfType(
                 result,
                 typeof(OkNegotiatedContentResult<ApiResponse<object>>));
 
             _userServiceMock.Verify(
-                x => x.DeactivateUserAsync(request.AccessToken),
+                x => x.DeactivateUserAsync(userId),
                 Times.Once);
         }
 
 
         [TestMethod]
-        public async Task Deactivate_EmptyAccessToken_ReturnsUnauthorized()
+        public async Task Deactivate_NoAuthenticatedUser_ReturnsUnauthorized()
         {
-            var request = new DeactivateRequestDto
-            {
-                AccessToken = ""
-            };
-
-            var result = await _controller.Deactivate(request);
+            var result = await _controller.Deactivate();
 
             Assert.IsInstanceOfType(
                 result,
                 typeof(UnauthorizedResult));
 
             _userServiceMock.Verify(
-                x => x.DeactivateUserAsync(It.IsAny<string>()),
+                x => x.DeactivateUserAsync(It.IsAny<long>()),
                 Times.Never);
         }
 
@@ -340,10 +341,9 @@ namespace Assignment3.Tests.Controllers
         [TestMethod]
         public async Task Deactivate_ServiceFails_ReturnsBadRequest()
         {
-            var request = new DeactivateRequestDto
-            {
-                AccessToken = "invalid-access-token"
-            };
+            long userId = 1;
+
+            SetAuthenticatedUser(userId);
 
             var serviceResponse = new ApiResponse<object>
             {
@@ -353,10 +353,10 @@ namespace Assignment3.Tests.Controllers
             };
 
             _userServiceMock
-                .Setup(x => x.DeactivateUserAsync(request.AccessToken))
+                .Setup(x => x.DeactivateUserAsync(userId))
                 .ReturnsAsync(serviceResponse);
 
-            var result = await _controller.Deactivate(request);
+            var result = await _controller.Deactivate();
 
             Assert.IsInstanceOfType(
                 result,
@@ -366,11 +366,11 @@ namespace Assignment3.Tests.Controllers
                 (NegotiatedContentResult<ApiResponse<object>>)result;
 
             Assert.AreEqual(
-                System.Net.HttpStatusCode.BadRequest,
+                HttpStatusCode.BadRequest,
                 badRequestResult.StatusCode);
 
             _userServiceMock.Verify(
-                x => x.DeactivateUserAsync(request.AccessToken),
+                x => x.DeactivateUserAsync(userId),
                 Times.Once);
         }
 
@@ -441,12 +441,34 @@ namespace Assignment3.Tests.Controllers
                 (NegotiatedContentResult<ApiResponse<object>>)result;
 
             Assert.AreEqual(
-                System.Net.HttpStatusCode.BadRequest,
+                HttpStatusCode.BadRequest,
                 badRequestResult.StatusCode);
 
             _userServiceMock.Verify(
                 x => x.UpdatePasswordAsync(request),
                 Times.Once);
+        }
+
+
+        // HELPER METHOD
+        // Creates the same ClaimsPrincipal that our JWT authentication filter creates after validating a token.
+
+        private void SetAuthenticatedUser(long userId)
+        {
+            var claims = new[]
+            {
+                new Claim(
+                    ClaimTypes.NameIdentifier,
+                    userId.ToString())
+            };
+
+            var identity = new ClaimsIdentity(
+                claims,
+                "TestAuthentication");
+
+            var principal = new ClaimsPrincipal(identity);
+
+            _controller.User = principal;
         }
     }
 }

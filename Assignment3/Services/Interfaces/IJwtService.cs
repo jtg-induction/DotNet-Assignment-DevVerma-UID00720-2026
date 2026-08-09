@@ -1,4 +1,5 @@
 ﻿using Assignment3.Models;
+using System.Security.Claims;
 
 namespace Assignment3.Services.Interfaces
 {
@@ -6,6 +7,7 @@ namespace Assignment3.Services.Interfaces
     {
         string GenerateAccessToken(User user);
         string GenerateRefreshToken();
+        ClaimsPrincipal ValidateToken(string token);
         long GetUserIdFromToken(string token);
     }
 }

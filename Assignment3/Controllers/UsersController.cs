@@ -4,6 +4,7 @@ using Assignment3.DTOs;
 using Assignment3.DTOs.Common;
 using Assignment3.Services.Interfaces;
 using System.Net;
+using System.Security.Claims;
 
 namespace Assignment3.Controllers
 {
@@ -11,10 +12,12 @@ namespace Assignment3.Controllers
     public class UsersController : ApiController
     {
         private readonly IUserService _userService;
+        private readonly IJwtService _jwtService;
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService, IJwtService jwtService)
         {
             _userService = userService;
+            _jwtService = jwtService;
         }
 
         [HttpPost]
@@ -114,17 +117,20 @@ namespace Assignment3.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [Route("deactivate")]
-        public async Task<IHttpActionResult> Deactivate(DeactivateRequestDto request)
+        public async Task<IHttpActionResult> Deactivate()
         {
-            string authorization = request.AccessToken;
+            var userIdClaim = ((ClaimsPrincipal)User).FindFirst(ClaimTypes.NameIdentifier);
 
-            if (string.IsNullOrWhiteSpace(authorization))
+            if(userIdClaim == null)
             {
                 return Unauthorized();
             }
 
-            var response = await _userService.DeactivateUserAsync(authorization);
+            long userId = long.Parse(userIdClaim.Value);
+
+            var response = await _userService.DeactivateUserAsync(userId);
 
             if (!response.Success)
             {
