@@ -47,6 +47,8 @@ namespace Assignment3
             container.RegisterType<IUserService, UserService>();
             container.RegisterType<IJwtService, JwtService>();
             container.RegisterType<IRefreshTokenRepository, RefreshTokenRepository>();
+            container.RegisterType<IRestaurantRepository, RestaurantRepository>();
+            container.RegisterType<IRestaurantService, RestaurantService>();
 
             container.RegisterType<JwtAuthenticationFilter>();
         }
