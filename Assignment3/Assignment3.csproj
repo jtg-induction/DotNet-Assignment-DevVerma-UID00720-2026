@@ -172,8 +172,6 @@
     <Compile Include="DTOs\Common\ApiResponse.cs" />
     <Compile Include="DTOs\LoginRequestDto.cs" />
     <Compile Include="DTOs\LoginResponseDto.cs" />
-    <Compile Include="DTOs\LogoutRequestDto.cs" />
-    <Compile Include="DTOs\RefreshTokenRequestDto.cs" />
     <Compile Include="DTOs\RefreshTokenResponseDto.cs" />
     <Compile Include="DTOs\SignUpRequestDto.cs" />
     <Compile Include="Enums\UserRole.cs" />
