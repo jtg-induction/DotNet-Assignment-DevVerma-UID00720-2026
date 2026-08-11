@@ -231,16 +231,13 @@ namespace Assignment3.Tests.Services
         [TestMethod]
         public async Task LogoutAsync_InvalidRefreshToken_ReturnsFalse()
         {
-            var request = new LogoutRequestDto
-            {
-                RefreshToken = "invalid-token"
-            };
+            string refreshToken = "invalid-token";
 
             _refreshTokenRepositoryMock
-                .Setup(x => x.GetRefreshTokenAsync(request.RefreshToken))
+                .Setup(x => x.GetRefreshTokenAsync(refreshToken))
                 .ReturnsAsync((RefreshToken)null);
 
-            var result = await _userService.LogoutAsync(request);
+            var result = await _userService.LogoutAsync(refreshToken);
 
             Assert.IsFalse(result);
 
@@ -253,29 +250,26 @@ namespace Assignment3.Tests.Services
         [TestMethod]
         public async Task LogoutAsync_ValidRefreshToken_DeletesToken()
         {
-            var request = new LogoutRequestDto
-            {
-                RefreshToken = "valid-token"
-            };
+            string refreshToken = "valid-token";
 
-            var refreshToken = new RefreshToken
+            var storedRefreshToken = new RefreshToken
             {
                 Id = 1,
                 UserId = 1,
-                Token = request.RefreshToken,
+                Token = refreshToken,
                 ExpiresAt = DateTime.UtcNow.AddDays(30)
             };
 
             _refreshTokenRepositoryMock
-                .Setup(x => x.GetRefreshTokenAsync(request.RefreshToken))
-                .ReturnsAsync(refreshToken);
+                .Setup(x => x.GetRefreshTokenAsync(refreshToken))
+                .ReturnsAsync(storedRefreshToken);
 
-            var result = await _userService.LogoutAsync(request);
+            var result = await _userService.LogoutAsync(refreshToken);
 
             Assert.IsTrue(result);
 
             _refreshTokenRepositoryMock.Verify(
-                x => x.DeleteRefreshTokenAsync(refreshToken),
+                x => x.DeleteRefreshTokenAsync(storedRefreshToken),
                 Times.Once);
         }
 
@@ -285,16 +279,13 @@ namespace Assignment3.Tests.Services
         [TestMethod]
         public async Task RefreshTokenAsync_TokenDoesNotExist_ReturnsNull()
         {
-            var request = new RefreshTokenRequestDto
-            {
-                RefreshToken = "invalid-token"
-            };
+            string refreshToken = "invalid-token";
 
             _refreshTokenRepositoryMock
-                .Setup(x => x.GetRefreshTokenAsync(request.RefreshToken))
+                .Setup(x => x.GetRefreshTokenAsync(refreshToken))
                 .ReturnsAsync((RefreshToken)null);
 
-            var result = await _userService.RefreshTokenAsync(request);
+            var result = await _userService.RefreshTokenAsync(refreshToken);
 
             Assert.IsNull(result);
         }
@@ -303,29 +294,26 @@ namespace Assignment3.Tests.Services
         [TestMethod]
         public async Task RefreshTokenAsync_ExpiredToken_DeletesTokenAndReturnsNull()
         {
-            var request = new RefreshTokenRequestDto
-            {
-                RefreshToken = "expired-token"
-            };
+            string refreshToken = "expired-token";
 
-            var refreshToken = new RefreshToken
+            var storedRefreshToken = new RefreshToken
             {
                 Id = 1,
                 UserId = 1,
-                Token = request.RefreshToken,
+                Token = refreshToken,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(-10)
             };
 
             _refreshTokenRepositoryMock
-                .Setup(x => x.GetRefreshTokenAsync(request.RefreshToken))
-                .ReturnsAsync(refreshToken);
+                .Setup(x => x.GetRefreshTokenAsync(refreshToken))
+                .ReturnsAsync(storedRefreshToken);
 
-            var result = await _userService.RefreshTokenAsync(request);
+            var result = await _userService.RefreshTokenAsync(refreshToken);
 
             Assert.IsNull(result);
 
             _refreshTokenRepositoryMock.Verify(
-                x => x.DeleteRefreshTokenAsync(refreshToken),
+                x => x.DeleteRefreshTokenAsync(storedRefreshToken),
                 Times.Once);
 
             _jwtServiceMock.Verify(
@@ -337,10 +325,7 @@ namespace Assignment3.Tests.Services
         [TestMethod]
         public async Task RefreshTokenAsync_ValidToken_RotatesTokens()
         {
-            var request = new RefreshTokenRequestDto
-            {
-                RefreshToken = "old-refresh-token"
-            };
+            string refreshToken = "old-refresh-token";
 
             var user = new User
             {
@@ -350,18 +335,18 @@ namespace Assignment3.Tests.Services
                 IsActive = true
             };
 
-            var refreshToken = new RefreshToken
+            var storedRefreshToken = new RefreshToken
             {
                 Id = 1,
                 UserId = user.Id,
-                Token = request.RefreshToken,
+                Token = refreshToken,
                 ExpiresAt = DateTime.UtcNow.AddDays(30),
                 User = user
             };
 
             _refreshTokenRepositoryMock
-                .Setup(x => x.GetRefreshTokenAsync(request.RefreshToken))
-                .ReturnsAsync(refreshToken);
+                .Setup(x => x.GetRefreshTokenAsync(refreshToken))
+                .ReturnsAsync(storedRefreshToken);
 
             _jwtServiceMock
                 .Setup(x => x.GenerateAccessToken(user))
@@ -371,7 +356,7 @@ namespace Assignment3.Tests.Services
                 .Setup(x => x.GenerateRefreshToken())
                 .Returns("new-refresh-token");
 
-            var result = await _userService.RefreshTokenAsync(request);
+            var result = await _userService.RefreshTokenAsync(refreshToken);
 
             Assert.IsNotNull(result);
             Assert.AreEqual("new-access-token", result.AccessToken);
@@ -379,7 +364,7 @@ namespace Assignment3.Tests.Services
 
             // Old token deleted
             _refreshTokenRepositoryMock.Verify(
-                x => x.DeleteRefreshTokenAsync(refreshToken),
+                x => x.DeleteRefreshTokenAsync(storedRefreshToken),
                 Times.Once);
 
             // New token created

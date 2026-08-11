@@ -6,3 +6,5 @@ packages/
 *.suo
 *.userosscache
 *.sln.docstates 
+appSettings.config
+connectionStrings.config
