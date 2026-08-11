@@ -10,10 +10,18 @@ namespace Assignment3.Filters
     {
         public override void OnException(HttpActionExecutedContext context)
         {
+
+            var safeMessage = "An unexpected error occurred. Please try again later.";
+
+            if (context.Exception is TimeoutException)
+            {
+                safeMessage = "The request took too long to process. Please try again.";
+            }
+
             var response = new ApiResponse<object>
             {
                 Success = false,
-                Message = context.Exception.Message,
+                Message = safeMessage,
                 Data = null
             };
 

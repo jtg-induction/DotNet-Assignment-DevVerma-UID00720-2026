@@ -13,12 +13,20 @@ namespace Assignment3.Services.Implementations
 {
     public class JwtService : IJwtService
     {
+        private readonly string secretKey;
+        private readonly string issuer;
+        private readonly string audience;
+        private readonly int expiryMinutes;
+
+        public JwtService()
+        {
+            secretKey = ConfigurationManager.AppSettings["JwtSecret"];
+            issuer = ConfigurationManager.AppSettings["JwtIssuer"];
+            audience = ConfigurationManager.AppSettings["JwtAudience"];
+            expiryMinutes = int.Parse(ConfigurationManager.AppSettings["AccessTokenExpiryMinutes"]);
+        }
         public string GenerateAccessToken(User user)
         {
-            var secretKey = ConfigurationManager.AppSettings["JwtSecret"];
-            var issuer = ConfigurationManager.AppSettings["JwtIssuer"];
-            var audience = ConfigurationManager.AppSettings["JwtAudience"];
-            var expiryMinutes = int.Parse(ConfigurationManager.AppSettings["AccessTokenExpiryMinutes"]);
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 

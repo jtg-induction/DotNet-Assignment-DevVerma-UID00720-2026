@@ -1,5 +1,8 @@
 ﻿using System.Threading.Tasks;
 using System.Web.Http;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using Assignment3.DTOs;
 using Assignment3.DTOs.Common;
 using Assignment3.Services.Interfaces;
@@ -54,20 +57,43 @@ namespace Assignment3.Controllers
                     });
             }
 
-            return Ok(new ApiResponse<object>
-            {
-                Success = true,
-                Message = "Login successful.",
-                Data = response
-            });
+            var result = Request.CreateResponse(
+                HttpStatusCode.OK,
+                new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Login successful.",
+                    Data = new
+                    {
+                        AccessToken = response.AccessToken
+                    }
+                });
+
+            SetRefreshTokenCookie(result, response.RefreshToken);
+
+            return ResponseMessage(result);
         }
 
         [HttpPost]
         [Route("logout")]
-        public async Task<IHttpActionResult> Logout(LogoutRequestDto request)
+        public async Task<IHttpActionResult> Logout()
         {
 
-            bool isLoggedOut = await _userService.LogoutAsync(request);
+            string refreshToken = GetRefreshTokenFromCookie();
+
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                return Content(
+                    HttpStatusCode.Unauthorized,
+                    new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Refresh token cookie not found.",
+                        Data = null
+                    });
+            }
+
+            bool isLoggedOut = await _userService.LogoutAsync(refreshToken);
 
             if (!isLoggedOut)
             {
@@ -81,24 +107,42 @@ namespace Assignment3.Controllers
                     });
             }
 
-            return Ok(new ApiResponse<object>
-            {
-                Success = true,
-                Message = "Logged out successfully.",
-                Data = null
-            });
+            var result = Request.CreateResponse(HttpStatusCode.OK, new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Logged out successfully.",
+                    Data = null
+                });
+
+            ClearRefreshTokenCookie(result);
+
+            return ResponseMessage(result);
         }
 
         [HttpPost]
         [Route("refresh-token")]
-        public async Task<IHttpActionResult> RefreshToken(RefreshTokenRequestDto request)
+        public async Task<IHttpActionResult> RefreshToken()
         {
 
-            var response = await _userService.RefreshTokenAsync(request);
+            string refreshToken = GetRefreshTokenFromCookie();
+
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                return Content(
+                    HttpStatusCode.Unauthorized,
+                    new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Refresh token cookie not found.",
+                        Data = null
+                    });
+            }
+
+            var response = await _userService.RefreshTokenAsync(refreshToken);
 
             if (response == null)
             {
-                return Content(
+                var failedResult = Request.CreateResponse(
                     HttpStatusCode.Unauthorized,
                     new ApiResponse<object>
                     {
@@ -106,14 +150,66 @@ namespace Assignment3.Controllers
                         Message = "Invalid or expired refresh token.",
                         Data = null
                     });
+
+                ClearRefreshTokenCookie(failedResult);
+
+                return ResponseMessage(failedResult);
             }
 
-            return Ok(new ApiResponse<object>
-            {
-                Success = true,
-                Message = "Token refreshed successfully.",
-                Data = response
-            });
+            var result = Request.CreateResponse(
+                HttpStatusCode.OK,
+                new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Token refreshed successfully.",
+                    Data = new
+                    {
+                        AccessToken = response.AccessToken
+                    }
+                });
+
+            SetRefreshTokenCookie(result, response.RefreshToken);
+
+            return ResponseMessage(result);
+        }
+
+        private string GetRefreshTokenFromCookie()
+        {
+            var cookieHeader = Request.Headers.GetCookies().FirstOrDefault();
+
+            if (cookieHeader == null)
+                return null;
+
+            var refreshTokenCookie = cookieHeader.Cookies
+                .FirstOrDefault(x => x.Name == "refreshToken");
+
+            if (refreshTokenCookie == null)
+                return null;
+
+            return refreshTokenCookie.Value;
+        }
+
+        private void SetRefreshTokenCookie(HttpResponseMessage response,string refreshToken)
+        {
+            var cookie = new CookieHeaderValue("refreshToken", refreshToken);
+
+            cookie.HttpOnly = true;
+            cookie.Secure = true;
+            cookie.Path = "/";
+
+            response.Headers.Add("Set-Cookie",cookie.ToString());
+        }
+
+        private void ClearRefreshTokenCookie(HttpResponseMessage response)
+        {
+            var cookie = new CookieHeaderValue("refreshToken", "");
+
+            cookie.HttpOnly = true;
+            cookie.Secure = true;
+            cookie.Path = "/";
+            cookie.Expires = System.DateTimeOffset.UtcNow.AddDays(-1);
+
+            response.Headers.Add("Set-Cookie", cookie.ToString());
         }
 
         [HttpPost]

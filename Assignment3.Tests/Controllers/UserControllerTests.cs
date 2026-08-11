@@ -5,8 +5,10 @@ using Assignment3.Services.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Net;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Web.Http;
 using System.Web.Http.Results;
 
 namespace Assignment3.Tests.Controllers
@@ -22,12 +24,17 @@ namespace Assignment3.Tests.Controllers
         public void Setup()
         {
             _userServiceMock = new Mock<IUserService>();
-            _jwtServiceMock =new Mock<IJwtService>();
+            _jwtServiceMock = new Mock<IJwtService>();
 
             _controller = new UsersController(
                 _userServiceMock.Object,
                 _jwtServiceMock.Object
             );
+
+            var config = new HttpConfiguration();
+
+            _controller.Request = new HttpRequestMessage();
+            _controller.Request.SetConfiguration(config);
         }
 
 
@@ -131,7 +138,15 @@ namespace Assignment3.Tests.Controllers
 
             Assert.IsInstanceOfType(
                 result,
-                typeof(OkNegotiatedContentResult<ApiResponse<object>>));
+                typeof(ResponseMessageResult));
+
+            var responseMessageResult =
+                (ResponseMessageResult)result;
+
+            Assert.IsNotNull(responseMessageResult.Response);
+
+            Assert.IsTrue(
+                responseMessageResult.Response.Headers.Contains("Set-Cookie"));
 
             _userServiceMock.Verify(
                 x => x.LoginAsync(request),
@@ -176,23 +191,36 @@ namespace Assignment3.Tests.Controllers
         [TestMethod]
         public async Task Logout_Success_ReturnsOk()
         {
-            var request = new LogoutRequestDto
-            {
-                RefreshToken = "valid-refresh-token"
-            };
+            var request = new HttpRequestMessage();
+
+            request.Headers.Add(
+                "Cookie",
+                "refreshToken=valid-refresh-token");
+
+            request.SetConfiguration(new HttpConfiguration());
+
+            _controller.Request = request;
 
             _userServiceMock
-                .Setup(x => x.LogoutAsync(request))
+                .Setup(x => x.LogoutAsync("valid-refresh-token"))
                 .ReturnsAsync(true);
 
-            var result = await _controller.Logout(request);
+            var result = await _controller.Logout();
 
             Assert.IsInstanceOfType(
                 result,
-                typeof(OkNegotiatedContentResult<ApiResponse<object>>));
+                typeof(ResponseMessageResult));
+
+            var responseMessageResult =
+                (ResponseMessageResult)result;
+
+            Assert.IsNotNull(responseMessageResult.Response);
+
+            Assert.IsTrue(
+                responseMessageResult.Response.Headers.Contains("Set-Cookie"));
 
             _userServiceMock.Verify(
-                x => x.LogoutAsync(request),
+                x => x.LogoutAsync("valid-refresh-token"),
                 Times.Once);
         }
 
@@ -200,16 +228,21 @@ namespace Assignment3.Tests.Controllers
         [TestMethod]
         public async Task Logout_InvalidToken_ReturnsUnauthorized()
         {
-            var request = new LogoutRequestDto
-            {
-                RefreshToken = "invalid-token"
-            };
+            var request = new HttpRequestMessage();
+
+            request.Headers.Add(
+                "Cookie",
+                "refreshToken=invalid-token");
+
+            request.SetConfiguration(new HttpConfiguration());
+
+            _controller.Request = request;
 
             _userServiceMock
-                .Setup(x => x.LogoutAsync(request))
+                .Setup(x => x.LogoutAsync("invalid-token"))
                 .ReturnsAsync(false);
 
-            var result = await _controller.Logout(request);
+            var result = await _controller.Logout();
 
             Assert.IsInstanceOfType(
                 result,
@@ -223,7 +256,7 @@ namespace Assignment3.Tests.Controllers
                 unauthorizedResult.StatusCode);
 
             _userServiceMock.Verify(
-                x => x.LogoutAsync(request),
+                x => x.LogoutAsync("invalid-token"),
                 Times.Once);
         }
 
@@ -233,10 +266,15 @@ namespace Assignment3.Tests.Controllers
         [TestMethod]
         public async Task RefreshToken_Success_ReturnsOk()
         {
-            var request = new RefreshTokenRequestDto
-            {
-                RefreshToken = "old-refresh-token"
-            };
+            var request = new HttpRequestMessage();
+
+            request.Headers.Add(
+                "Cookie",
+                "refreshToken=old-refresh-token");
+
+            request.SetConfiguration(new HttpConfiguration());
+
+            _controller.Request = request;
 
             var refreshResponse = new RefreshTokenResponseDto
             {
@@ -245,17 +283,25 @@ namespace Assignment3.Tests.Controllers
             };
 
             _userServiceMock
-                .Setup(x => x.RefreshTokenAsync(request))
+                .Setup(x => x.RefreshTokenAsync("old-refresh-token"))
                 .ReturnsAsync(refreshResponse);
 
-            var result = await _controller.RefreshToken(request);
+            var result = await _controller.RefreshToken();
 
             Assert.IsInstanceOfType(
                 result,
-                typeof(OkNegotiatedContentResult<ApiResponse<object>>));
+                typeof(ResponseMessageResult));
+
+            var responseMessageResult =
+                (ResponseMessageResult)result;
+
+            Assert.IsNotNull(responseMessageResult.Response);
+
+            Assert.IsTrue(
+                responseMessageResult.Response.Headers.Contains("Set-Cookie"));
 
             _userServiceMock.Verify(
-                x => x.RefreshTokenAsync(request),
+                x => x.RefreshTokenAsync("old-refresh-token"),
                 Times.Once);
         }
 
@@ -263,30 +309,37 @@ namespace Assignment3.Tests.Controllers
         [TestMethod]
         public async Task RefreshToken_InvalidToken_ReturnsUnauthorized()
         {
-            var request = new RefreshTokenRequestDto
-            {
-                RefreshToken = "invalid-token"
-            };
+            var request = new HttpRequestMessage();
+
+            request.Headers.Add(
+                "Cookie",
+                "refreshToken=invalid-token");
+
+            request.SetConfiguration(new HttpConfiguration());
+
+            _controller.Request = request;
 
             _userServiceMock
-                .Setup(x => x.RefreshTokenAsync(request))
+                .Setup(x => x.RefreshTokenAsync("invalid-token"))
                 .ReturnsAsync((RefreshTokenResponseDto)null);
 
-            var result = await _controller.RefreshToken(request);
+            var result = await _controller.RefreshToken();
 
             Assert.IsInstanceOfType(
                 result,
-                typeof(NegotiatedContentResult<ApiResponse<object>>));
+                typeof(ResponseMessageResult));
 
-            var unauthorizedResult =
-                (NegotiatedContentResult<ApiResponse<object>>)result;
+            var responseMessageResult =
+                (ResponseMessageResult)result;
+
+            Assert.IsNotNull(responseMessageResult.Response);
 
             Assert.AreEqual(
                 HttpStatusCode.Unauthorized,
-                unauthorizedResult.StatusCode);
+                responseMessageResult.Response.StatusCode);
 
             _userServiceMock.Verify(
-                x => x.RefreshTokenAsync(request),
+                x => x.RefreshTokenAsync("invalid-token"),
                 Times.Once);
         }
 

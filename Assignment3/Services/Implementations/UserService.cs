@@ -99,41 +99,44 @@ namespace Assignment3.Services.Implementations
             };
         }
 
-        public async Task<bool> LogoutAsync(LogoutRequestDto request)
+        public async Task<bool> LogoutAsync(string refreshToken)
         {
-            var refreshToken = await _refreshTokenRepository
-                .GetRefreshTokenAsync(request.RefreshToken);
+            var storedRefreshToken =
+                await _refreshTokenRepository.GetRefreshTokenAsync(refreshToken);
 
-            if (refreshToken == null)
+            if (storedRefreshToken == null)
                 return false;
 
             await _refreshTokenRepository
-                .DeleteRefreshTokenAsync(refreshToken);
+                .DeleteRefreshTokenAsync(storedRefreshToken);
 
             return true;
         }
 
-        public async Task<RefreshTokenResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request)
+        public async Task<RefreshTokenResponseDto> RefreshTokenAsync(string refreshToken)
         {
-            var refreshToken = await _refreshTokenRepository
-                .GetRefreshTokenAsync(request.RefreshToken);
+            var storedRefreshToken = await _refreshTokenRepository.GetRefreshTokenAsync(refreshToken);
 
-            if (refreshToken == null)
+            if (storedRefreshToken == null)
                 return null;
 
-            if (refreshToken.ExpiresAt <= DateTime.UtcNow)
+            if (storedRefreshToken.ExpiresAt <= DateTime.UtcNow)
             {
-                await _refreshTokenRepository.DeleteRefreshTokenAsync(refreshToken);
+                await _refreshTokenRepository.DeleteRefreshTokenAsync(storedRefreshToken);
+
                 return null;
             }
 
-            var user = refreshToken.User;
+            var user = storedRefreshToken.User;
 
-            string newAccessToken = _jwtService.GenerateAccessToken(user);
+            string newAccessToken =
+                _jwtService.GenerateAccessToken(user);
 
-            string newRefreshToken = _jwtService.GenerateRefreshToken();
+            string newRefreshToken =
+                _jwtService.GenerateRefreshToken();
 
-            await _refreshTokenRepository.DeleteRefreshTokenAsync(refreshToken);
+            await _refreshTokenRepository
+                .DeleteRefreshTokenAsync(storedRefreshToken);
 
             await _refreshTokenRepository.SaveRefreshTokenAsync(
                 new RefreshToken
