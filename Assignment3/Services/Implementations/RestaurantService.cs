@@ -16,12 +16,11 @@ namespace Assignment3.Services.Implementations
             _restaurantRepository = restaurantRepository;
         }
 
-        public async Task<ApiResponse<object>> GetAvailableRestaurantsAsync()
+        public async Task<ApiResponse<object>> GetAvailableRestaurantsAsync(int page, int pageSize)
         {
-            var restaurants =
-                await _restaurantRepository.GetAvailableRestaurantsAsync();
+            var result = await _restaurantRepository.GetAvailableRestaurantsAsync(page, pageSize);
 
-            var restaurantDtos = restaurants.Select(r => new RestaurantDto
+            var restaurantDtos = result.Restaurants.Select(r => new RestaurantDto
             {
                 Id = r.Id,
                 Name = r.Name,
@@ -29,11 +28,21 @@ namespace Assignment3.Services.Implementations
                 AddressId = r.AddressId
             }).ToList();
 
+            var totalPages = (int)System.Math.Ceiling(
+                (double)result.TotalCount / pageSize);
+
             return new ApiResponse<object>
             {
                 Success = true,
                 Message = "Restaurants retrieved successfully.",
-                Data = restaurantDtos
+                Data = new
+                {
+                    Restaurants = restaurantDtos,
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalItems = result.TotalCount,
+                    TotalPages = totalPages
+                }
             };
         }
 

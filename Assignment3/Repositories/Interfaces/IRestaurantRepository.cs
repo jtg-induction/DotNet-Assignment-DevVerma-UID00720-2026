@@ -6,7 +6,7 @@ namespace Assignment3.Repositories.Interfaces
 {
     public interface IRestaurantRepository
     {
-        Task<List<Restaurant>> GetAvailableRestaurantsAsync();
+        Task<(List<Restaurant> Restaurants, int TotalCount)> GetAvailableRestaurantsAsync(int page , int pageSize);
         Task<List<MenuItem>> GetAvailableMenuItemsAsync(int restaurantId);
     }
 }

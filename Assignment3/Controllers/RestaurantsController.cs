@@ -17,10 +17,14 @@ namespace Assignment3.Controllers
 
         [HttpGet]
         [Route("")]
-        public async Task<IHttpActionResult> GetAvailableRestaurants()
+        public async Task<IHttpActionResult> GetAvailableRestaurants(int page = 1,int pageSize = 10)
         {
-            var response =
-                await _restaurantService.GetAvailableRestaurantsAsync();
+            if (page < 1 || pageSize < 1 || pageSize > 50)
+            {
+                return BadRequest("Page and pageSize must be greater than 0 and pageSize must be between 1 and 50");
+            }
+
+            var response = await _restaurantService.GetAvailableRestaurantsAsync(page, pageSize);
 
             return Ok(response);
         }

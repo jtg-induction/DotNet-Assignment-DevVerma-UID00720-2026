@@ -17,11 +17,20 @@ namespace Assignment3.Repositories.Implementations
             _context = context;
         }
 
-        public async Task<List<Restaurant>> GetAvailableRestaurantsAsync()
+        public async Task<(List<Restaurant> Restaurants, int TotalCount)> GetAvailableRestaurantsAsync(int page,int pageSize)
         {
-            return await _context.Restaurants
-                .Where(r => r.IsActive)
+            var query = _context.Restaurants
+                .Where(r => r.IsActive);
+
+            var totalCount = await query.CountAsync();
+
+            var restaurants = await query
+                .OrderBy(r => r.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return (restaurants, totalCount);
         }
 
         public async Task<List<MenuItem>> GetAvailableMenuItemsAsync(int restaurantId)
