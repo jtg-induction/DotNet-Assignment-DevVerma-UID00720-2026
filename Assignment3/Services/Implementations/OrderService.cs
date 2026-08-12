@@ -252,5 +252,55 @@ namespace Assignment3.Services.Implementations
                 }
             }
         }
+
+        public async Task<ApiResponse<object>> GetOrderDetailsAsync(long orderId, long userId)
+        {
+            var order = await _orderRepository
+                .GetOrderDetailsAsync(orderId, userId);
+
+            if (order == null)
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Order not found.",
+                    Data = null
+                };
+            }
+
+            var orderDetails = new OrderDetailsDto
+            {
+                OrderId = order.Id,
+                Status = order.Status,
+                RestaurantName = order.Restaurant.Name,
+                TotalAmount = order.TotalAmount,
+
+                BuildingNumber = order.BuildingNumber,
+                Locality = order.Locality,
+                City = order.City,
+                State = order.State,
+                Country = order.Country,
+                PostalCode = order.PostalCode,
+
+                CreatedAt = order.CreatedAt,
+                UpdatedAt = order.UpdatedAt,
+
+                Items = order.OrderItems.Select(oi => new OrderItemDetailsDto
+                {
+                    MenuItemId = oi.MenuItemId,
+                    Name = oi.MenuItem.Name,
+                    Quantity = oi.Quantity,
+                    UnitPrice = oi.UnitPrice,
+                    Subtotal = oi.Quantity * oi.UnitPrice
+                }).ToList()
+            };
+
+            return new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Order details retrieved successfully.",
+                Data = orderDetails
+            };
+        }
     }
 }

@@ -177,6 +177,8 @@
     <Compile Include="DTOs\LoginRequestDto.cs" />
     <Compile Include="DTOs\LoginResponseDto.cs" />
     <Compile Include="DTOs\MenuItemDto.cs" />
+    <Compile Include="DTOs\OrderDetailsDto.cs" />
+    <Compile Include="DTOs\OrderItemDetailsDto.cs" />
     <Compile Include="DTOs\RefreshTokenResponseDto.cs" />
     <Compile Include="DTOs\RestaurantDto.cs" />
     <Compile Include="DTOs\SignUpRequestDto.cs" />

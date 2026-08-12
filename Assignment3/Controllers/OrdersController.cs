@@ -43,5 +43,30 @@ namespace Assignment3.Controllers
 
             return Ok(response);
         }
+
+        [HttpGet]
+        [Authorize]
+        [Route("{orderId}")]
+        public async Task<IHttpActionResult> GetOrderDetails(long orderId)
+        {
+            var userIdClaim = ((ClaimsPrincipal)User).FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+            {
+                return Unauthorized();
+            }
+
+            long userId = long.Parse(userIdClaim.Value);
+
+            var response =
+                await _orderService.GetOrderDetailsAsync(orderId, userId);
+
+            if (!response.Success)
+            {
+                return Content(HttpStatusCode.NotFound, response);
+            }
+
+            return Ok(response);
+        }
     }
 }

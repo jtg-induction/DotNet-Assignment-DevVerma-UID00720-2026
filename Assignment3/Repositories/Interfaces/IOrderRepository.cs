@@ -18,5 +18,7 @@ namespace Assignment3.Repositories.Interfaces
         Task CreateOrderItemsAsync(List<OrderItem> orderItems);
 
         Task SaveAsync();
+
+        Task<Order> GetOrderDetailsAsync(long orderId, long userId);
     }
 }

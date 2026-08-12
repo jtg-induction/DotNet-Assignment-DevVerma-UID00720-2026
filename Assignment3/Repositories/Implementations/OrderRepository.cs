@@ -89,5 +89,15 @@ namespace Assignment3.Repositories.Implementations
         {
             await _context.SaveChangesAsync();
         }
+
+        public async Task<Order> GetOrderDetailsAsync(long orderId, long userId)
+        {
+            return await _context.Orders
+                .Include(o => o.Restaurant)
+                .Include(o => o.OrderItems.Select(oi => oi.MenuItem))
+                .FirstOrDefaultAsync(o =>
+                    o.Id == orderId &&
+                    o.UserId == userId);
+        }
     }
 }
