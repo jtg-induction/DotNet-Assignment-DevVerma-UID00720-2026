@@ -7,5 +7,8 @@ namespace Assignment3.Services.Interfaces
     public interface IUserService
     {
         Task<ApiResponse<object>> SignUpAsync(SignUpRequestDto request);
+        Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
+        Task<bool> LogoutAsync(string refreshToken);
+        Task<RefreshTokenResponseDto> RefreshTokenAsync(string refreshToken);
     }
 }

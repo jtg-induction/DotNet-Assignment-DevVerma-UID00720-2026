@@ -44,6 +44,8 @@ namespace Assignment3
             container.RegisterType<FoodOrderingContext>(new HierarchicalLifetimeManager());
             container.RegisterType<IUserRepository, UserRepository>();
             container.RegisterType<IUserService, UserService>();
+            container.RegisterType<IJwtService, JwtService>();
+            container.RegisterType<IRefreshTokenRepository, RefreshTokenRepository>();
         }
     }
 }
