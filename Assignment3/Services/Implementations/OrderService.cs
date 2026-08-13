@@ -360,9 +360,7 @@ namespace Assignment3.Services.Implementations
                         };
                     }
 
-                    var orderItems = await _context.OrderItems
-                        .Where(oi => oi.OrderId == orderId)
-                        .ToListAsync();
+                    var orderItems = await _orderRepository.GetOrderItemsAsync(orderId);
 
                     if (!orderItems.Any())
                     {

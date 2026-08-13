@@ -123,5 +123,12 @@ namespace Assignment3.Repositories.Implementations
                     ro.UserId == userId &&
                     ro.RestaurantId == restaurantId);
         }
+
+        public async Task<List<OrderItem>> GetOrderItemsAsync(long orderId)
+        {
+            return await _context.OrderItems
+                .Where(oi => oi.OrderId == orderId)
+                .ToListAsync();
+        }
     }
 }
