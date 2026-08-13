@@ -99,5 +99,29 @@ namespace Assignment3.Repositories.Implementations
                     o.Id == orderId &&
                     o.UserId == userId);
         }
+
+        public async Task<Order> GetOrderForUpdateAsync(long orderId)
+        {
+            var order = await _context.Database
+                .SqlQuery<Order>(
+                    @"SELECT * FROM Orders WITH (UPDLOCK, ROWLOCK) WHERE Id = @p0",
+                    orderId)
+                .FirstOrDefaultAsync();
+
+            if (order != null)
+            {
+                _context.Orders.Attach(order);
+            }
+
+            return order;
+        }
+
+        public async Task<bool> IsRestaurantOwnerAsync(long userId, int restaurantId)
+        {
+            return await _context.RestaurantOwners
+                .AnyAsync(ro =>
+                    ro.UserId == userId &&
+                    ro.RestaurantId == restaurantId);
+        }
     }
 }

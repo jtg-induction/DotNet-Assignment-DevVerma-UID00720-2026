@@ -4,8 +4,10 @@ using Assignment3.DTOs.Common;
 using Assignment3.Models;
 using Assignment3.Repositories.Interfaces;
 using Assignment3.Services.Interfaces;
+using Assignment3.Enums;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -301,6 +303,150 @@ namespace Assignment3.Services.Implementations
                 Message = "Order details retrieved successfully.",
                 Data = orderDetails
             };
+        }
+
+        public async Task<ApiResponse<object>> CancelOrderAsync(long orderId, long userId, string role)
+        {
+            using (var transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    var order = await _orderRepository
+                        .GetOrderForUpdateAsync(orderId);
+
+                    if (order == null)
+                    {
+                        transaction.Rollback();
+
+                        return new ApiResponse<object>
+                        {
+                            Success = false,
+                            Message = "Order not found.",
+                            Data = null
+                        };
+                    }
+
+                    bool isCustomer = order.UserId == userId;
+
+                    bool isRestaurantOwner = false;
+
+                    if (!isCustomer && role == UserRole.admin.ToString())
+                    {
+                        isRestaurantOwner =
+                            await _orderRepository.IsRestaurantOwnerAsync(userId, order.RestaurantId);
+                    }
+
+                    if (!isCustomer && !isRestaurantOwner)
+                    {
+                        transaction.Rollback();
+
+                        return new ApiResponse<object>
+                        {
+                            Success = false,
+                            Message = "You are not authorized to cancel this order.",
+                            Data = null
+                        };
+                    }
+
+                    if (order.Status != "placed")
+                    {
+                        transaction.Rollback();
+
+                        return new ApiResponse<object>
+                        {
+                            Success = false,
+                            Message = "Only orders in placed status can be cancelled.",
+                            Data = null
+                        };
+                    }
+
+                    var orderItems = await _context.OrderItems
+                        .Where(oi => oi.OrderId == orderId)
+                        .ToListAsync();
+
+                    if (!orderItems.Any())
+                    {
+                        transaction.Rollback();
+
+                        return new ApiResponse<object>
+                        {
+                            Success = false,
+                            Message = "Order items not found.",
+                            Data = null
+                        };
+                    }
+
+                    var user = await _orderRepository
+                        .GetUserForUpdateAsync(order.UserId);
+
+                    if (user == null)
+                    {
+                        transaction.Rollback();
+
+                        return new ApiResponse<object>
+                        {
+                            Success = false,
+                            Message = "Order user not found.",
+                            Data = null
+                        };
+                    }
+
+                    var menuItemIds = orderItems
+                        .Select(oi => oi.MenuItemId)
+                        .Distinct()
+                        .ToList();
+
+                    var menuItems = await _orderRepository
+                        .GetMenuItemsForUpdateAsync(menuItemIds);
+
+                    if (menuItems.Count != menuItemIds.Count)
+                    {
+                        transaction.Rollback();
+
+                        return new ApiResponse<object>
+                        {
+                            Success = false,
+                            Message = "One or more menu items were not found.",
+                            Data = null
+                        };
+                    }
+
+                    user.Balance += order.TotalAmount;
+                    user.UpdatedAt = DateTime.UtcNow;
+
+                    foreach (var orderItem in orderItems)
+                    {
+                        var menuItem = menuItems
+                            .First(m => m.Id == orderItem.MenuItemId);
+
+                        menuItem.Stock += orderItem.Quantity;
+                        menuItem.UpdatedAt = DateTime.UtcNow;
+                    }
+
+                    order.Status = "cancelled";
+                    order.UpdatedAt = DateTime.UtcNow;
+
+                    await _orderRepository.SaveAsync();
+
+                    transaction.Commit();
+
+                    return new ApiResponse<object>
+                    {
+                        Success = true,
+                        Message = "Order cancelled successfully.",
+                        Data = new
+                        {
+                            OrderId = order.Id,
+                            RefundedAmount = order.TotalAmount
+                        }
+                    };
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            }
         }
     }
 }
