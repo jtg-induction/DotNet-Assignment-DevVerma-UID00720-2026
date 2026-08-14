@@ -193,7 +193,7 @@ namespace Assignment3.Services.Implementations
             };
         }
 
-        public async Task<ApiResponse<object>> UpdatePasswordAsync(UpdatePasswordRequestDto request)
+        public async Task<ApiResponse<object>> UpdatePasswordAsync(UpdatePasswordRequestDto request, long userId)
         {
             var user = await _userRepository.GetUserByEmailAsync(request.Email);
 
@@ -203,6 +203,16 @@ namespace Assignment3.Services.Implementations
                 {
                     Success = false,
                     Message = "User not found.",
+                    Data = null
+                };
+            }
+
+            if(user.Id != userId)
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Unauthorised access",
                     Data = null
                 };
             }

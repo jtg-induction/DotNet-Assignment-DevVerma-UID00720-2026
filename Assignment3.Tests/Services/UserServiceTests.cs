@@ -390,14 +390,51 @@ namespace Assignment3.Tests.Services
                 NewPassword = "NewPassword123"
             };
 
+            long userId = 1;
+
             _userRepositoryMock
                 .Setup(x => x.GetUserByEmailAsync(request.Email))
                 .ReturnsAsync((User)null);
 
-            var result = await _userService.UpdatePasswordAsync(request);
+            var result = await _userService.UpdatePasswordAsync(request, userId);
 
             Assert.IsFalse(result.Success);
             Assert.AreEqual("User not found.", result.Message);
+
+            _userRepositoryMock.Verify(
+                x => x.SaveAsync(),
+                Times.Never);
+        }
+
+
+        [TestMethod]
+        public async Task UpdatePasswordAsync_UserIdDoesNotMatch_ReturnsFailure()
+        {
+            var user = new User
+            {
+                Id = 2,
+                Email = "john@test.com",
+                Password = BCrypt.Net.BCrypt.HashPassword("OldPassword123")
+            };
+
+            var request = new UpdatePasswordRequestDto
+            {
+                Email = user.Email,
+                CurrentPassword = "OldPassword123",
+                NewPassword = "NewPassword123"
+            };
+
+            // Logged-in user's ID
+            long userId = 1;
+
+            _userRepositoryMock
+                .Setup(x => x.GetUserByEmailAsync(request.Email))
+                .ReturnsAsync(user);
+
+            var result = await _userService.UpdatePasswordAsync(request, userId);
+
+            Assert.IsFalse(result.Success);
+            Assert.AreEqual("Unauthorised access", result.Message);
 
             _userRepositoryMock.Verify(
                 x => x.SaveAsync(),
@@ -424,11 +461,13 @@ namespace Assignment3.Tests.Services
                 NewPassword = "NewPassword123"
             };
 
+            long userId = 1;
+
             _userRepositoryMock
                 .Setup(x => x.GetUserByEmailAsync(request.Email))
                 .ReturnsAsync(user);
 
-            var result = await _userService.UpdatePasswordAsync(request);
+            var result = await _userService.UpdatePasswordAsync(request, userId);
 
             Assert.IsFalse(result.Success);
             Assert.AreEqual(
@@ -461,24 +500,26 @@ namespace Assignment3.Tests.Services
                 NewPassword = newPassword
             };
 
+            long userId = 1;
+
             _userRepositoryMock
                 .Setup(x => x.GetUserByEmailAsync(request.Email))
                 .ReturnsAsync(user);
 
-            var result = await _userService.UpdatePasswordAsync(request);
+            var result = await _userService.UpdatePasswordAsync(request, userId);
 
             Assert.IsTrue(result.Success);
             Assert.AreEqual(
                 "Password updated successfully.",
                 result.Message);
 
-            // Verify the NEW password works
+            // NEW password should work
             Assert.IsTrue(
                 BCrypt.Net.BCrypt.Verify(
                     newPassword,
                     user.Password));
 
-            // Verify the OLD password no longer works
+            // OLD password should no longer work
             Assert.IsFalse(
                 BCrypt.Net.BCrypt.Verify(
                     currentPassword,
