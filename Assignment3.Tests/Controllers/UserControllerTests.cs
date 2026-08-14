@@ -433,6 +433,10 @@ namespace Assignment3.Tests.Controllers
         [TestMethod]
         public async Task UpdatePassword_Success_ReturnsOk()
         {
+            var userId = 1L;
+
+            SetAuthenticatedUser(userId);
+
             var request = new UpdatePasswordRequestDto
             {
                 Email = "john@test.com",
@@ -448,7 +452,7 @@ namespace Assignment3.Tests.Controllers
             };
 
             _userServiceMock
-                .Setup(x => x.UpdatePasswordAsync(request))
+                .Setup(x => x.UpdatePasswordAsync(request, userId))
                 .ReturnsAsync(serviceResponse);
 
             var result = await _controller.UpdatePassword(request);
@@ -458,7 +462,7 @@ namespace Assignment3.Tests.Controllers
                 typeof(OkNegotiatedContentResult<ApiResponse<object>>));
 
             _userServiceMock.Verify(
-                x => x.UpdatePasswordAsync(request),
+                x => x.UpdatePasswordAsync(request, userId),
                 Times.Once);
         }
 
@@ -466,6 +470,10 @@ namespace Assignment3.Tests.Controllers
         [TestMethod]
         public async Task UpdatePassword_ServiceFails_ReturnsBadRequest()
         {
+            var userId = 1L;
+
+            SetAuthenticatedUser(userId);
+
             var request = new UpdatePasswordRequestDto
             {
                 Email = "john@test.com",
@@ -481,7 +489,7 @@ namespace Assignment3.Tests.Controllers
             };
 
             _userServiceMock
-                .Setup(x => x.UpdatePasswordAsync(request))
+                .Setup(x => x.UpdatePasswordAsync(request, userId))
                 .ReturnsAsync(serviceResponse);
 
             var result = await _controller.UpdatePassword(request);
@@ -498,7 +506,7 @@ namespace Assignment3.Tests.Controllers
                 badRequestResult.StatusCode);
 
             _userServiceMock.Verify(
-                x => x.UpdatePasswordAsync(request),
+                x => x.UpdatePasswordAsync(request, userId),
                 Times.Once);
         }
 
