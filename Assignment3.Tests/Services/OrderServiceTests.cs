@@ -1,9 +1,9 @@
 ﻿using Assignment3.Data;
 using Assignment3.DTOs;
-using Assignment3.DTOs.Common;
 using Assignment3.Models;
 using Assignment3.Repositories.Interfaces;
 using Assignment3.Services.Implementations;
+using Assignment3.Enums;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -162,7 +162,7 @@ namespace Assignment3.Tests.Services
                 Id = 100,
                 UserId = 1,
                 RestaurantId = 1,
-                Status = "placed",
+                Status = OrderStatus.placed.ToString(),
                 TotalAmount = 400,
 
                 BuildingNumber = "10",
@@ -216,7 +216,7 @@ namespace Assignment3.Tests.Services
             // Order information
             Assert.AreEqual(100,data.OrderId);
 
-            Assert.AreEqual("placed",data.Status);
+            Assert.AreEqual(OrderStatus.placed.ToString(),data.Status);
 
             Assert.AreEqual("Pizza Palace",data.RestaurantName);
 

@@ -1,6 +1,4 @@
-﻿using Assignment3.DTOs;
-using Assignment3.DTOs.Common;
-using Assignment3.Services.Interfaces;
+﻿using Assignment3.Services.Interfaces;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;

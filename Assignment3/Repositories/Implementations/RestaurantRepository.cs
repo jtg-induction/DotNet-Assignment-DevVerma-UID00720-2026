@@ -20,6 +20,7 @@ namespace Assignment3.Repositories.Implementations
         public async Task<(List<Restaurant> Restaurants, int TotalCount)> GetAvailableRestaurantsAsync(int page,int pageSize)
         {
             var query = _context.Restaurants
+                .AsNoTracking()
                 .Where(r => r.IsActive);
 
             var totalCount = await query.CountAsync();
@@ -36,6 +37,7 @@ namespace Assignment3.Repositories.Implementations
         public async Task<List<MenuItem>> GetAvailableMenuItemsAsync(int restaurantId)
         {
             return await _context.MenuItems
+                .AsNoTracking()
                 .Where(m => m.RestaurantId == restaurantId)
                 .Where(m => m.Restaurant.IsActive)
                 .ToListAsync();

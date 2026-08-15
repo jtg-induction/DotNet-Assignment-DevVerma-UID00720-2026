@@ -3,9 +3,9 @@ using Assignment3.DTOs;
 using Assignment3.DTOs.Common;
 using Assignment3.Models;
 using Assignment3.Repositories.Interfaces;
+using Assignment3.Enums;
 using Assignment3.Services.Interfaces;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -195,7 +195,7 @@ namespace Assignment3.Services.Implementations
                     {
                         UserId = userId,
                         RestaurantId = request.RestaurantId,
-                        Status = "placed",
+                        Status = OrderStatus.placed.ToString(),  
                         TotalAmount = totalAmount,
                         BuildingNumber = address.BuildingNumber,
                         Locality = address.Locality,

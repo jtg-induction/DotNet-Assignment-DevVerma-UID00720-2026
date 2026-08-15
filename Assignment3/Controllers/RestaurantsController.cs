@@ -1,5 +1,7 @@
-﻿using Assignment3.DTOs.Common;
+﻿using Assignment3.DTOs;
+using Assignment3.DTOs.Common;
 using Assignment3.Services.Interfaces;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -21,7 +23,14 @@ namespace Assignment3.Controllers
         {
             if (page < 1 || pageSize < 1 || pageSize > 50)
             {
-                return BadRequest("Page and pageSize must be greater than 0 and pageSize must be between 1 and 50");
+
+                var res = new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Page and pageSize must be greater than 0 and pageSize must be between 1 and 50"
+                };
+
+                return Content(HttpStatusCode.BadRequest,res);
             }
 
             var response = await _restaurantService.GetAvailableRestaurantsAsync(page, pageSize);
