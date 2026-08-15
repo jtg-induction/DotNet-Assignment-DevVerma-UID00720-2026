@@ -11,6 +11,32 @@ namespace Assignment3.Filters
     {
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
+
+            foreach (var argument in actionContext.ActionArguments)
+            {
+                if (argument.Value == null)
+                    continue;
+
+                var properties = argument.Value.GetType()
+                    .GetProperties();
+
+                foreach (var property in properties)
+                {
+                    if (property.PropertyType != typeof(string))
+                        continue;
+
+                    var value = property.GetValue(argument.Value) as string;
+
+                    if (!string.IsNullOrEmpty(value) && value != value.Trim())
+                    {
+                        actionContext.ModelState.AddModelError(
+                            property.Name,
+                            $"{property.Name} must not contain leading or trailing spaces."
+                        );
+                    }
+                }
+            }
+
             if (!actionContext.ModelState.IsValid)
             {
                 // Map ModelState errors to Dictionary<string, List<string>> format
