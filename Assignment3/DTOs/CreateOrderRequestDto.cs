@@ -1,5 +1,4 @@
-﻿using Assignment3.DTOs;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 public class CreateOrderRequestDto

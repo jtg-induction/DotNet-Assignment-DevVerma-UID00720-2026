@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Assignment3.DTOs
+﻿namespace Assignment3.DTOs
 {
     public class RestaurantDto
     {

@@ -1,13 +1,13 @@
-﻿using System.Threading.Tasks;
-using System.Web.Http;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using Assignment3.DTOs;
+﻿using Assignment3.DTOs;
 using Assignment3.DTOs.Common;
 using Assignment3.Services.Interfaces;
+using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace Assignment3.Controllers
 {
@@ -237,10 +237,21 @@ namespace Assignment3.Controllers
         }
 
         [HttpPut]
+        [Authorize]
         [Route("update-password")]
         public async Task<IHttpActionResult> UpdatePassword(UpdatePasswordRequestDto request)
         {
-            var response = await _userService.UpdatePasswordAsync(request);
+
+            var userIdClaim = ((ClaimsPrincipal)User).FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+            {
+                return Unauthorized();
+            }
+
+            long userId = long.Parse(userIdClaim.Value);
+
+            var response = await _userService.UpdatePasswordAsync(request,userId);
 
             if (!response.Success)
             {

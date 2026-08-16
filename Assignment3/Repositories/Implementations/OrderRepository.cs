@@ -93,6 +93,7 @@ namespace Assignment3.Repositories.Implementations
         public async Task<Order> GetOrderDetailsAsync(long orderId, long userId)
         {
             return await _context.Orders
+                .AsNoTracking()
                 .Include(o => o.Restaurant)
                 .Include(o => o.OrderItems.Select(oi => oi.MenuItem))
                 .FirstOrDefaultAsync(o =>

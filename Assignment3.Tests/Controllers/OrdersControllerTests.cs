@@ -2,6 +2,7 @@
 using Assignment3.DTOs;
 using Assignment3.DTOs.Common;
 using Assignment3.Services.Interfaces;
+using Assignment3.Enums;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Net;
@@ -148,7 +149,7 @@ namespace Assignment3.Tests.Controllers
             var orderDetails = new OrderDetailsDto
             {
                 OrderId = orderId,
-                Status = "placed",
+                Status = OrderStatus.placed.ToString(),
                 RestaurantName = "Pizza Palace",
                 TotalAmount = 400
             };

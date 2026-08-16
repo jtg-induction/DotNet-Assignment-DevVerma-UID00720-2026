@@ -106,7 +106,6 @@ namespace Assignment3.Tests.Controllers
                 .Setup(x => x.GetAvailableRestaurantsAsync(1, 10))
                 .ReturnsAsync(serviceResponse);
 
-
             var result =
                 await _controller.GetAvailableRestaurants();
 
@@ -128,9 +127,22 @@ namespace Assignment3.Tests.Controllers
 
             Assert.IsInstanceOfType(
                 result,
-                typeof(BadRequestErrorMessageResult));
+                typeof(NegotiatedContentResult<ApiResponse<object>>));
 
-            // Service must NOT be called
+            var badRequestResult =
+                (NegotiatedContentResult<ApiResponse<object>>)result;
+
+            Assert.AreEqual(
+                HttpStatusCode.BadRequest,
+                badRequestResult.StatusCode);
+
+            Assert.IsFalse(
+                badRequestResult.Content.Success);
+
+            Assert.AreEqual(
+                "Page and pageSize must be greater than 0 and pageSize must be between 1 and 50",
+                badRequestResult.Content.Message);
+
             _restaurantServiceMock.Verify(
                 x => x.GetAvailableRestaurantsAsync(
                     It.IsAny<int>(),
@@ -147,7 +159,21 @@ namespace Assignment3.Tests.Controllers
 
             Assert.IsInstanceOfType(
                 result,
-                typeof(BadRequestErrorMessageResult));
+                typeof(NegotiatedContentResult<ApiResponse<object>>));
+
+            var badRequestResult =
+                (NegotiatedContentResult<ApiResponse<object>>)result;
+
+            Assert.AreEqual(
+                HttpStatusCode.BadRequest,
+                badRequestResult.StatusCode);
+
+            Assert.IsFalse(
+                badRequestResult.Content.Success);
+
+            Assert.AreEqual(
+                "Page and pageSize must be greater than 0 and pageSize must be between 1 and 50",
+                badRequestResult.Content.Message);
 
             _restaurantServiceMock.Verify(
                 x => x.GetAvailableRestaurantsAsync(
@@ -165,7 +191,21 @@ namespace Assignment3.Tests.Controllers
 
             Assert.IsInstanceOfType(
                 result,
-                typeof(BadRequestErrorMessageResult));
+                typeof(NegotiatedContentResult<ApiResponse<object>>));
+
+            var badRequestResult =
+                (NegotiatedContentResult<ApiResponse<object>>)result;
+
+            Assert.AreEqual(
+                HttpStatusCode.BadRequest,
+                badRequestResult.StatusCode);
+
+            Assert.IsFalse(
+                badRequestResult.Content.Success);
+
+            Assert.AreEqual(
+                "Page and pageSize must be greater than 0 and pageSize must be between 1 and 50",
+                badRequestResult.Content.Message);
 
             _restaurantServiceMock.Verify(
                 x => x.GetAvailableRestaurantsAsync(
@@ -183,7 +223,21 @@ namespace Assignment3.Tests.Controllers
 
             Assert.IsInstanceOfType(
                 result,
-                typeof(BadRequestErrorMessageResult));
+                typeof(NegotiatedContentResult<ApiResponse<object>>));
+
+            var badRequestResult =
+                (NegotiatedContentResult<ApiResponse<object>>)result;
+
+            Assert.AreEqual(
+                HttpStatusCode.BadRequest,
+                badRequestResult.StatusCode);
+
+            Assert.IsFalse(
+                badRequestResult.Content.Success);
+
+            Assert.AreEqual(
+                "Page and pageSize must be greater than 0 and pageSize must be between 1 and 50",
+                badRequestResult.Content.Message);
 
             _restaurantServiceMock.Verify(
                 x => x.GetAvailableRestaurantsAsync(
@@ -201,7 +255,21 @@ namespace Assignment3.Tests.Controllers
 
             Assert.IsInstanceOfType(
                 result,
-                typeof(BadRequestErrorMessageResult));
+                typeof(NegotiatedContentResult<ApiResponse<object>>));
+
+            var badRequestResult =
+                (NegotiatedContentResult<ApiResponse<object>>)result;
+
+            Assert.AreEqual(
+                HttpStatusCode.BadRequest,
+                badRequestResult.StatusCode);
+
+            Assert.IsFalse(
+                badRequestResult.Content.Success);
+
+            Assert.AreEqual(
+                "Page and pageSize must be greater than 0 and pageSize must be between 1 and 50",
+                badRequestResult.Content.Message);
 
             _restaurantServiceMock.Verify(
                 x => x.GetAvailableRestaurantsAsync(

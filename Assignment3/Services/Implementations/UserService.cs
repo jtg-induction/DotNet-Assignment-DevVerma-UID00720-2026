@@ -5,7 +5,6 @@ using Assignment3.DTOs.Common;
 using Assignment3.Models;
 using Assignment3.Repositories.Interfaces;
 using Assignment3.Services.Interfaces;
-using BCrypt.Net;
 using Assignment3.Enums;
 
 namespace Assignment3.Services.Implementations
@@ -193,7 +192,7 @@ namespace Assignment3.Services.Implementations
             };
         }
 
-        public async Task<ApiResponse<object>> UpdatePasswordAsync(UpdatePasswordRequestDto request)
+        public async Task<ApiResponse<object>> UpdatePasswordAsync(UpdatePasswordRequestDto request, long userId)
         {
             var user = await _userRepository.GetUserByEmailAsync(request.Email);
 
@@ -203,6 +202,16 @@ namespace Assignment3.Services.Implementations
                 {
                     Success = false,
                     Message = "User not found.",
+                    Data = null
+                };
+            }
+
+            if(user.Id != userId)
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Unauthorised access",
                     Data = null
                 };
             }

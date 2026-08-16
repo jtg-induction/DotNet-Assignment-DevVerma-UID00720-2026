@@ -1,7 +1,4 @@
 ﻿using Assignment3.Filters;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Web.Http;
 
 namespace Assignment3
