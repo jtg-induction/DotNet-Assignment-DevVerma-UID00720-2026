@@ -8,5 +8,10 @@ namespace Assignment3.Repositories.Interfaces
     {
         Task<(List<Restaurant> Restaurants, int TotalCount)> GetAvailableRestaurantsAsync(int page , int pageSize);
         Task<List<MenuItem>> GetAvailableMenuItemsAsync(int restaurantId);
+        Task<Restaurant> GetRestaurantByEmailAsync(string email);
+        void AddRestaurant(Restaurant restaurant);
+        void AddAddress(Address address);
+        void AddRestaurantOwner(RestaurantOwner restaurantOwner);
+        Task SaveAsync();
     }
 }

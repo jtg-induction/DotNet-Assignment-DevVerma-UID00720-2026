@@ -42,5 +42,32 @@ namespace Assignment3.Repositories.Implementations
                 .Where(m => m.Restaurant.IsActive)
                 .ToListAsync();
         }
+
+        public async Task<Restaurant> GetRestaurantByEmailAsync(string email)
+        {
+            return await _context.Restaurants
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Email == email);
+        }
+
+        public void AddRestaurant(Restaurant restaurant)
+        {
+            _context.Restaurants.Add(restaurant);
+        }
+
+        public void AddAddress(Address address)
+        {
+            _context.Addresses.Add(address);
+        }
+
+        public void AddRestaurantOwner(RestaurantOwner restaurantOwner)
+        {
+            _context.RestaurantOwners.Add(restaurantOwner);
+        }
+
+        public async Task SaveAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 }

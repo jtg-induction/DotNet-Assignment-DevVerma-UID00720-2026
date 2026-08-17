@@ -169,8 +169,10 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\OrdersController.cs" />
     <Compile Include="Controllers\RestaurantsController.cs" />
+    <Compile Include="Controllers\SuperAdminController.cs" />
     <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Data\FoodOrderingContext.cs" />
+    <Compile Include="DTOs\AddRestaurantRequestDto.cs" />
     <Compile Include="DTOs\Common\ApiResponse.cs" />
     <Compile Include="DTOs\CreateOrderItemDto.cs" />
     <Compile Include="DTOs\CreateOrderRequestDto.cs" />
@@ -216,10 +218,12 @@
     <Compile Include="Services\Implementations\JwtService.cs" />
     <Compile Include="Services\Implementations\OrderService.cs" />
     <Compile Include="Services\Implementations\RestaurantService.cs" />
+    <Compile Include="Services\Implementations\SuperAdminService.cs" />
     <Compile Include="Services\Implementations\UserService.cs" />
     <Compile Include="Services\Interfaces\IJwtService.cs" />
     <Compile Include="Services\Interfaces\IOrderService.cs" />
     <Compile Include="Services\Interfaces\IRestaurantService.cs" />
+    <Compile Include="Services\Interfaces\ISuperAdminService.cs" />
     <Compile Include="Services\Interfaces\IUserService.cs" />
   </ItemGroup>
   <ItemGroup>
