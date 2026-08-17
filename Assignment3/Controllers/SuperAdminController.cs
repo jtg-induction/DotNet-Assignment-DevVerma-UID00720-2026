@@ -1,4 +1,5 @@
-﻿using Assignment3.Services.Interfaces;
+﻿using Assignment3.DTOs;
+using Assignment3.Services.Interfaces;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -20,9 +21,25 @@ namespace Assignment3.Controllers
         [Route("add-restaurant")]
         public async Task<IHttpActionResult> AddRestaurant(AddRestaurantRequestDto request)
         {
-            var response =
-                await _superAdminService
+            var response = await _superAdminService
                     .AddRestaurantAsync(request);
+
+            if (!response.Success)
+            {
+                return Content(
+                    System.Net.HttpStatusCode.BadRequest,
+                    response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpPost]
+        [Route("add-restaurant-owner")]
+        public async Task<IHttpActionResult> AddRestaurantOwner(AddRestaurantOwnerRequestDto request)
+        {
+            var response = await _superAdminService
+                    .AddRestaurantOwnerAsync(request);
 
             if (!response.Success)
             {

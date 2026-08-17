@@ -50,6 +50,13 @@ namespace Assignment3.Repositories.Implementations
                 .FirstOrDefaultAsync(r => r.Email == email);
         }
 
+        public async Task<Restaurant> GetRestaurantByIdAsync(int restaurantId)
+        {
+            return await _context.Restaurants
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == restaurantId);
+        }
+
         public void AddRestaurant(Restaurant restaurant)
         {
             _context.Restaurants.Add(restaurant);

@@ -1,4 +1,5 @@
 ﻿using Assignment3.Data;
+using Assignment3.DTOs;
 using Assignment3.DTOs.Common;
 using Assignment3.Enums;
 using Assignment3.Models;
@@ -130,7 +131,7 @@ namespace Assignment3.Services.Implementations
                 Password = BCrypt.Net.BCrypt.HashPassword(request.OwnerPassword),
                 Role = UserRole.admin.ToString(),
                 IsActive = true,
-                Balance = 0,
+                Balance = 1000,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null
             };
@@ -161,5 +162,121 @@ namespace Assignment3.Services.Implementations
                 }
             };
         }
+
+        public async Task<ApiResponse<object>> AddRestaurantOwnerAsync(AddRestaurantOwnerRequestDto request)
+        {
+            using (var transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    var response = await AddRestaurantOwnerInternalAsync(request);
+
+                    if (!response.Success)
+                    {
+                        transaction.Rollback();
+                        return response;
+                    }
+
+                    transaction.Commit();
+
+                    return response;
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        public async Task<ApiResponse<object>> AddRestaurantOwnerInternalAsync(AddRestaurantOwnerRequestDto request)
+        {
+            var restaurant = await _restaurantRepository
+                    .GetRestaurantByIdAsync(request.RestaurantId);
+
+            if (restaurant == null)
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Restaurant not found.",
+                    Data = null
+                };
+            }
+
+            if (!restaurant.IsActive)
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Restaurant is inactive.",
+                    Data = null
+                };
+            }
+
+            if (restaurant.Email.Equals(
+                request.OwnerEmail,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Restaurant email and owner email must be different.",
+                    Data = null
+                };
+            }
+
+            var existingUser = await _userRepository
+                    .GetUserByEmailAsync(request.OwnerEmail);
+
+            if (existingUser != null)
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "User with this email already exists.",
+                    Data = null
+                };
+            }
+
+            var owner = new User
+            {
+                Name = request.OwnerName,
+                Email = request.OwnerEmail,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.OwnerPassword),
+                Role = UserRole.admin.ToString(),
+                IsActive = true,
+                Balance = 1000,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = null
+            };
+
+            _userRepository.AddUser(owner);
+
+            await _userRepository.SaveAsync();
+
+            var restaurantOwner = new RestaurantOwner
+            {
+                UserId = owner.Id,
+                RestaurantId = restaurant.Id,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _restaurantRepository.AddRestaurantOwner(restaurantOwner);
+
+            await _restaurantRepository.SaveAsync();
+
+            return new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Restaurant owner onboarded successfully.",
+                Data = new
+                {
+                    OwnerId = owner.Id,
+                    RestaurantId = restaurant.Id
+                }
+            };
+        }
+
     }
 }

@@ -172,6 +172,7 @@
     <Compile Include="Controllers\SuperAdminController.cs" />
     <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Data\FoodOrderingContext.cs" />
+    <Compile Include="DTOs\AddRestaurantOwnerRequestDto.cs" />
     <Compile Include="DTOs\AddRestaurantRequestDto.cs" />
     <Compile Include="DTOs\Common\ApiResponse.cs" />
     <Compile Include="DTOs\CreateOrderItemDto.cs" />
