@@ -170,9 +170,11 @@
   <ItemGroup>
     <Compile Include="Controllers\OrdersControllerTests.cs" />
     <Compile Include="Controllers\RestaurantControllerTests.cs" />
+    <Compile Include="Controllers\SuperAdminControllerTests.cs" />
     <Compile Include="Controllers\UserControllerTests.cs" />
     <Compile Include="Services\OrderServiceTests.cs" />
     <Compile Include="Services\RestaurantServiceTests.cs" />
+    <Compile Include="Services\SuperAdminServiceTests.cs" />
     <Compile Include="Services\UserServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
