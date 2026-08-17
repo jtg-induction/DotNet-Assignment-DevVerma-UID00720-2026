@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assignment3.Filters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
@@ -21,6 +22,7 @@ namespace Assignment3
             );
             config.Filters.Add(new Assignment3.Filters.GlobalExceptionFilter());
             config.Filters.Add(new Assignment3.Filters.ValidateModelAttribute());
+            config.Filters.Add((JwtAuthenticationFilter)UnityConfig.Container.Resolve(typeof(JwtAuthenticationFilter),null));
         }
     }
 }

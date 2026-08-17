@@ -7,6 +7,7 @@ namespace Assignment3.Repositories.Interfaces
     {
         Task<User> GetUserByEmailAsync(string email);
         void AddUser(User user);
+        Task<User> GetUserByIdAsync(long id);
         Task SaveAsync();
     }
 }

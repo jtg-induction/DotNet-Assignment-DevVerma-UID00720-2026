@@ -2,6 +2,7 @@
 using Assignment3.Models;
 using Assignment3.Repositories.Interfaces;
 using System.Data.Entity;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Assignment3.Repositories.Implementations
@@ -31,6 +32,16 @@ namespace Assignment3.Repositories.Implementations
         public async Task DeleteRefreshTokenAsync(RefreshToken refreshToken)
         {
             _context.RefreshTokens.Remove(refreshToken);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAllRefreshTokensByUserIdAsync(long userId)
+        {
+            var refreshTokens = _context.RefreshTokens
+                .Where(x => x.UserId == userId);
+
+            _context.RefreshTokens.RemoveRange(refreshTokens);
 
             await _context.SaveChangesAsync();
         }

@@ -10,5 +10,6 @@ namespace Assignment3.Repositories.Interfaces
         Task<RefreshToken> GetRefreshTokenAsync(string token);
 
         Task DeleteRefreshTokenAsync(RefreshToken refreshToken);
+        Task DeleteAllRefreshTokensByUserIdAsync(long userId);
     }
 }
