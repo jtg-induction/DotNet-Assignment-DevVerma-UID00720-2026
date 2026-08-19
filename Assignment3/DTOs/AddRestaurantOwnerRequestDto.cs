@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Assignment3.DTOs
 {
@@ -8,16 +9,6 @@ namespace Assignment3.DTOs
         public int RestaurantId { get; set; }
 
         [Required]
-        [StringLength(100)]
-        public string OwnerName { get; set; }
-
-        [Required]
-        [EmailAddress]
-        [StringLength(255)]
-        public string OwnerEmail { get; set; }
-
-        [Required]
-        [StringLength(255)]
-        public string OwnerPassword { get; set; }
+        public List<RestaurantOwnerDto> Owners { get; set; }
     }
 }

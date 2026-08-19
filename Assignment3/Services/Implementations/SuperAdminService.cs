@@ -6,6 +6,7 @@ using Assignment3.Models;
 using Assignment3.Repositories.Interfaces;
 using Assignment3.Services.Interfaces;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Assignment3.Services.Implementations
@@ -55,18 +56,6 @@ namespace Assignment3.Services.Implementations
 
         public async Task<ApiResponse<object>> AddRestaurantInternalAsync(AddRestaurantRequestDto request)
         {
-            if (request.RestaurantEmail.Equals(
-                request.OwnerEmail,
-                StringComparison.OrdinalIgnoreCase))
-            {
-                return new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "Restaurant email and owner email must be different.",
-                    Data = null
-                };
-            }
-
             var existingRestaurant = await _restaurantRepository
                     .GetRestaurantByEmailAsync(request.RestaurantEmail);
 
@@ -76,19 +65,6 @@ namespace Assignment3.Services.Implementations
                 {
                     Success = false,
                     Message = "Restaurant with this email already exists.",
-                    Data = null
-                };
-            }
-
-            var existingUser = await _userRepository
-                    .GetUserByEmailAsync(request.OwnerEmail);
-
-            if (existingUser != null)
-            {
-                return new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "User with this email already exists.",
                     Data = null
                 };
             }
@@ -124,52 +100,49 @@ namespace Assignment3.Services.Implementations
 
             await _restaurantRepository.SaveAsync();
 
-            var owner = new User
+            if (request.Owners == null || !request.Owners.Any())
             {
-                Name = request.OwnerName,
-                Email = request.OwnerEmail,
-                Password = BCrypt.Net.BCrypt.HashPassword(request.OwnerPassword),
-                Role = UserRole.admin.ToString(),
-                IsActive = true,
-                Balance = 1000,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null
-            };
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "At least one restaurant owner is required.",
+                    Data = null
+                };
+            }
 
-            _userRepository.AddUser(owner);
-
-            await _userRepository.SaveAsync();
-
-            var restaurantOwner = new RestaurantOwner
+            foreach (var ownerRequest in request.Owners)
             {
-                UserId = owner.Id,
-                RestaurantId = restaurant.Id,
-                CreatedAt = DateTime.UtcNow
-            };
+                var ownerResponse =
+                    await AddRestaurantOwnerInternalAsync(
+                        restaurant,
+                        ownerRequest);
 
-            _restaurantRepository.AddRestaurantOwner(restaurantOwner);
-
-            await _restaurantRepository.SaveAsync();
+                if (!ownerResponse.Success)
+                {
+                    return ownerResponse;
+                }
+            }
 
             return new ApiResponse<object>
             {
                 Success = true,
-                Message = "Restaurant and owner onboarded successfully.",
+                Message = "Restaurant and owners onboarded successfully.",
                 Data = new
                 {
-                    RestaurantId = restaurant.Id,
-                    OwnerId = owner.Id
+                    RestaurantId = restaurant.Id
                 }
             };
         }
 
-        public async Task<ApiResponse<object>> AddRestaurantOwnerAsync(AddRestaurantOwnerRequestDto request)
+        public async Task<ApiResponse<object>> AddRestaurantOwnerAsync(
+            AddRestaurantOwnerRequestDto request)
         {
             using (var transaction = _context.Database.BeginTransaction())
             {
                 try
                 {
-                    var response = await AddRestaurantOwnerInternalAsync(request);
+                    var response =
+                        await AddRestaurantOwnerInternalAsync(request);
 
                     if (!response.Success)
                     {
@@ -189,9 +162,11 @@ namespace Assignment3.Services.Implementations
             }
         }
 
-        public async Task<ApiResponse<object>> AddRestaurantOwnerInternalAsync(AddRestaurantOwnerRequestDto request)
+        public async Task<ApiResponse<object>> AddRestaurantOwnerInternalAsync(
+            AddRestaurantOwnerRequestDto request)
         {
-            var restaurant = await _restaurantRepository
+            var restaurant =
+                await _restaurantRepository
                     .GetRestaurantByIdAsync(request.RestaurantId);
 
             if (restaurant == null)
@@ -214,6 +189,42 @@ namespace Assignment3.Services.Implementations
                 };
             }
 
+            if (request.Owners == null || !request.Owners.Any())
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "At least one restaurant owner is required.",
+                    Data = null
+                };
+            }
+
+            foreach (var ownerRequest in request.Owners)
+            {
+                var response =
+                    await AddRestaurantOwnerInternalAsync(
+                        restaurant,
+                        ownerRequest);
+
+                if (!response.Success)
+                {
+                    return response;
+                }
+            }
+
+            return new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Restaurant owners onboarded successfully.",
+                Data = new
+                {
+                    RestaurantId = restaurant.Id
+                }
+            };
+        }
+
+        private async Task<ApiResponse<object>> AddRestaurantOwnerInternalAsync(Restaurant restaurant, RestaurantOwnerDto request)
+        {
             if (restaurant.Email.Equals(
                 request.OwnerEmail,
                 StringComparison.OrdinalIgnoreCase))
@@ -229,31 +240,48 @@ namespace Assignment3.Services.Implementations
             var existingUser = await _userRepository
                     .GetUserByEmailAsync(request.OwnerEmail);
 
+            User owner;
+
             if (existingUser != null)
+            {
+                owner = existingUser;
+
+                owner.Role = UserRole.admin.ToString();
+                owner.UpdatedAt = DateTime.UtcNow;
+
+                await _userRepository.SaveAsync();
+            }
+            else
+            {
+                owner = new User
+                {
+                    Name = request.OwnerName,
+                    Email = request.OwnerEmail,
+                    Password = BCrypt.Net.BCrypt.HashPassword("123456789"),
+                    Role = UserRole.admin.ToString(),
+                    IsActive = true,
+                    Balance = 0,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = null
+                };
+
+                _userRepository.AddUser(owner);
+
+                await _userRepository.SaveAsync();
+            }
+
+            var alreadyOwner = await _restaurantRepository
+                    .IsRestaurantOwnerAsync(owner.Id, restaurant.Id);
+
+            if (alreadyOwner)
             {
                 return new ApiResponse<object>
                 {
                     Success = false,
-                    Message = "User with this email already exists.",
+                    Message = "User is already an owner of this restaurant.",
                     Data = null
                 };
             }
-
-            var owner = new User
-            {
-                Name = request.OwnerName,
-                Email = request.OwnerEmail,
-                Password = BCrypt.Net.BCrypt.HashPassword(request.OwnerPassword),
-                Role = UserRole.admin.ToString(),
-                IsActive = true,
-                Balance = 1000,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = null
-            };
-
-            _userRepository.AddUser(owner);
-
-            await _userRepository.SaveAsync();
 
             var restaurantOwner = new RestaurantOwner
             {
@@ -262,7 +290,8 @@ namespace Assignment3.Services.Implementations
                 CreatedAt = DateTime.UtcNow
             };
 
-            _restaurantRepository.AddRestaurantOwner(restaurantOwner);
+            _restaurantRepository.AddRestaurantOwner(
+                restaurantOwner);
 
             await _restaurantRepository.SaveAsync();
 

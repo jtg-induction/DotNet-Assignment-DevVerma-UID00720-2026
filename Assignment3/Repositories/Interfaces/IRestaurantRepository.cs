@@ -10,6 +10,7 @@ namespace Assignment3.Repositories.Interfaces
         Task<List<MenuItem>> GetAvailableMenuItemsAsync(int restaurantId);
         Task<Restaurant> GetRestaurantByEmailAsync(string email);
         Task<Restaurant> GetRestaurantByIdAsync(int restaurantId);
+        Task<bool> IsRestaurantOwnerAsync(long userId, int restaurantId);
         void AddRestaurant(Restaurant restaurant);
         void AddAddress(Address address);
         void AddRestaurantOwner(RestaurantOwner restaurantOwner);

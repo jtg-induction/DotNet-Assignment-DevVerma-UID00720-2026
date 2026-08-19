@@ -22,7 +22,7 @@ namespace Assignment3.Controllers
         public async Task<IHttpActionResult> AddRestaurant(AddRestaurantRequestDto request)
         {
             var response = await _superAdminService
-                    .AddRestaurantAsync(request);
+                .AddRestaurantAsync(request);
 
             if (!response.Success)
             {
@@ -39,7 +39,7 @@ namespace Assignment3.Controllers
         public async Task<IHttpActionResult> AddRestaurantOwner(AddRestaurantOwnerRequestDto request)
         {
             var response = await _superAdminService
-                    .AddRestaurantOwnerAsync(request);
+                .AddRestaurantOwnerAsync(request);
 
             if (!response.Success)
             {

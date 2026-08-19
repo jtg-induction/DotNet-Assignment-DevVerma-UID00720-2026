@@ -6,6 +6,7 @@ using Assignment3.Repositories.Interfaces;
 using Assignment3.Services.Implementations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Assignment3.Tests.Services
@@ -39,8 +40,9 @@ namespace Assignment3.Tests.Services
         }
 
 
+        // ============================================================
         // ADD RESTAURANT OWNER TESTS
-
+        // ============================================================
 
         [TestMethod]
         public async Task AddRestaurantOwnerInternalAsync_RestaurantDoesNotExist_ReturnsFailure()
@@ -52,9 +54,14 @@ namespace Assignment3.Tests.Services
             var request = new AddRestaurantOwnerRequestDto
             {
                 RestaurantId = 1,
-                OwnerName = "Rahul Sharma",
-                OwnerEmail = "rahul@example.com",
-                OwnerPassword = "Rahul@12345"
+                Owners = new List<RestaurantOwnerDto>
+                {
+                    new RestaurantOwnerDto
+                    {
+                        OwnerName = "Rahul Sharma",
+                        OwnerEmail = "rahul@example.com"
+                    }
+                }
             };
 
             var result =
@@ -95,9 +102,14 @@ namespace Assignment3.Tests.Services
             var request = new AddRestaurantOwnerRequestDto
             {
                 RestaurantId = 1,
-                OwnerName = "Rahul Sharma",
-                OwnerEmail = "rahul@example.com",
-                OwnerPassword = "Rahul@12345"
+                Owners = new List<RestaurantOwnerDto>
+                {
+                    new RestaurantOwnerDto
+                    {
+                        OwnerName = "Rahul Sharma",
+                        OwnerEmail = "rahul@example.com"
+                    }
+                }
             };
 
             var result =
@@ -121,6 +133,48 @@ namespace Assignment3.Tests.Services
 
 
         [TestMethod]
+        public async Task AddRestaurantOwnerInternalAsync_NoOwners_ReturnsFailure()
+        {
+            var restaurant = new Restaurant
+            {
+                Id = 1,
+                Name = "Pizza Palace",
+                Email = "pizza@example.com",
+                IsActive = true
+            };
+
+            _restaurantRepositoryMock
+                .Setup(x => x.GetRestaurantByIdAsync(1))
+                .ReturnsAsync(restaurant);
+
+            var request = new AddRestaurantOwnerRequestDto
+            {
+                RestaurantId = 1,
+                Owners = new List<RestaurantOwnerDto>()
+            };
+
+            var result =
+                await _superAdminService
+                    .AddRestaurantOwnerInternalAsync(request);
+
+            Assert.IsFalse(result.Success);
+
+            Assert.AreEqual(
+                "At least one restaurant owner is required.",
+                result.Message);
+
+            _userRepositoryMock.Verify(
+                x => x.GetUserByEmailAsync(It.IsAny<string>()),
+                Times.Never);
+
+            _restaurantRepositoryMock.Verify(
+                x => x.AddRestaurantOwner(
+                    It.IsAny<RestaurantOwner>()),
+                Times.Never);
+        }
+
+
+        [TestMethod]
         public async Task AddRestaurantOwnerInternalAsync_RestaurantAndOwnerEmailSame_ReturnsFailure()
         {
             var restaurant = new Restaurant
@@ -138,9 +192,14 @@ namespace Assignment3.Tests.Services
             var request = new AddRestaurantOwnerRequestDto
             {
                 RestaurantId = 1,
-                OwnerName = "Pizza Palace Owner",
-                OwnerEmail = "pizza@example.com",
-                OwnerPassword = "Password@123"
+                Owners = new List<RestaurantOwnerDto>
+                {
+                    new RestaurantOwnerDto
+                    {
+                        OwnerName = "Pizza Palace Owner",
+                        OwnerEmail = "pizza@example.com"
+                    }
+                }
             };
 
             var result =
@@ -157,14 +216,15 @@ namespace Assignment3.Tests.Services
                 x => x.GetUserByEmailAsync(It.IsAny<string>()),
                 Times.Never);
 
-            _userRepositoryMock.Verify(
-                x => x.AddUser(It.IsAny<User>()),
+            _restaurantRepositoryMock.Verify(
+                x => x.AddRestaurantOwner(
+                    It.IsAny<RestaurantOwner>()),
                 Times.Never);
         }
 
 
         [TestMethod]
-        public async Task AddRestaurantOwnerInternalAsync_UserAlreadyExists_ReturnsFailure()
+        public async Task AddRestaurantOwnerInternalAsync_UserAlreadyOwner_ReturnsFailure()
         {
             var restaurant = new Restaurant
             {
@@ -177,7 +237,9 @@ namespace Assignment3.Tests.Services
             var existingUser = new User
             {
                 Id = 10,
-                Email = "rahul@example.com"
+                Name = "Rahul Sharma",
+                Email = "rahul@example.com",
+                Role = "customer"
             };
 
             _restaurantRepositoryMock
@@ -188,12 +250,25 @@ namespace Assignment3.Tests.Services
                 .Setup(x => x.GetUserByEmailAsync("rahul@example.com"))
                 .ReturnsAsync(existingUser);
 
+            _userRepositoryMock
+                .Setup(x => x.SaveAsync())
+                .Returns(Task.CompletedTask);
+
+            _restaurantRepositoryMock
+                .Setup(x => x.IsRestaurantOwnerAsync(10, 1))
+                .ReturnsAsync(true);
+
             var request = new AddRestaurantOwnerRequestDto
             {
                 RestaurantId = 1,
-                OwnerName = "Rahul Sharma",
-                OwnerEmail = "rahul@example.com",
-                OwnerPassword = "Rahul@12345"
+                Owners = new List<RestaurantOwnerDto>
+                {
+                    new RestaurantOwnerDto
+                    {
+                        OwnerName = "Rahul Sharma",
+                        OwnerEmail = "rahul@example.com"
+                    }
+                }
             };
 
             var result =
@@ -203,12 +278,16 @@ namespace Assignment3.Tests.Services
             Assert.IsFalse(result.Success);
 
             Assert.AreEqual(
-                "User with this email already exists.",
+                "User is already an owner of this restaurant.",
                 result.Message);
 
+            Assert.AreEqual(
+                UserRole.admin.ToString(),
+                existingUser.Role);
+
             _userRepositoryMock.Verify(
-                x => x.AddUser(It.IsAny<User>()),
-                Times.Never);
+                x => x.SaveAsync(),
+                Times.Once);
 
             _restaurantRepositoryMock.Verify(
                 x => x.AddRestaurantOwner(
@@ -218,7 +297,102 @@ namespace Assignment3.Tests.Services
 
 
         [TestMethod]
-        public async Task AddRestaurantOwnerInternalAsync_Success_CreatesOwnerAndLink()
+        public async Task AddRestaurantOwnerInternalAsync_ExistingUser_UpgradesRoleAndCreatesLink()
+        {
+            var restaurant = new Restaurant
+            {
+                Id = 1,
+                Name = "Pizza Palace",
+                Email = "pizza@example.com",
+                IsActive = true
+            };
+
+            var existingUser = new User
+            {
+                Id = 10,
+                Name = "Rahul Sharma",
+                Email = "rahul@example.com",
+                Role = UserRole.customer.ToString(),
+                IsActive = true,
+                Balance = 500
+            };
+
+            _restaurantRepositoryMock
+                .Setup(x => x.GetRestaurantByIdAsync(1))
+                .ReturnsAsync(restaurant);
+
+            _userRepositoryMock
+                .Setup(x => x.GetUserByEmailAsync(
+                    "rahul@example.com"))
+                .ReturnsAsync(existingUser);
+
+            _userRepositoryMock
+                .Setup(x => x.SaveAsync())
+                .Returns(Task.CompletedTask);
+
+            _restaurantRepositoryMock
+                .Setup(x => x.IsRestaurantOwnerAsync(10, 1))
+                .ReturnsAsync(false);
+
+            _restaurantRepositoryMock
+                .Setup(x => x.SaveAsync())
+                .Returns(Task.CompletedTask);
+
+            var request = new AddRestaurantOwnerRequestDto
+            {
+                RestaurantId = 1,
+                Owners = new List<RestaurantOwnerDto>
+                {
+                    new RestaurantOwnerDto
+                    {
+                        OwnerName = "Rahul Sharma",
+                        OwnerEmail = "rahul@example.com"
+                    }
+                }
+            };
+
+            var result =
+                await _superAdminService
+                    .AddRestaurantOwnerInternalAsync(request);
+
+            Assert.IsTrue(result.Success);
+
+            Assert.AreEqual(
+                "Restaurant owners onboarded successfully.",
+                result.Message);
+
+            Assert.AreEqual(
+                UserRole.admin.ToString(),
+                existingUser.Role);
+
+            _userRepositoryMock.Verify(
+                x => x.AddUser(
+                    It.IsAny<User>()),
+                Times.Never);
+
+            _userRepositoryMock.Verify(
+                x => x.SaveAsync(),
+                Times.Once);
+
+            _restaurantRepositoryMock.Verify(
+                x => x.IsRestaurantOwnerAsync(10, 1),
+                Times.Once);
+
+            _restaurantRepositoryMock.Verify(
+                x => x.AddRestaurantOwner(
+                    It.Is<RestaurantOwner>(ro =>
+                        ro.UserId == 10 &&
+                        ro.RestaurantId == 1)),
+                Times.Once);
+
+            _restaurantRepositoryMock.Verify(
+                x => x.SaveAsync(),
+                Times.Once);
+        }
+
+
+        [TestMethod]
+        public async Task AddRestaurantOwnerInternalAsync_NewUser_CreatesOwnerAndLink()
         {
             var restaurant = new Restaurant
             {
@@ -233,7 +407,8 @@ namespace Assignment3.Tests.Services
                 .ReturnsAsync(restaurant);
 
             _userRepositoryMock
-                .Setup(x => x.GetUserByEmailAsync("rahul@example.com"))
+                .Setup(x => x.GetUserByEmailAsync(
+                    "rahul@example.com"))
                 .ReturnsAsync((User)null);
 
             _userRepositoryMock
@@ -241,11 +416,16 @@ namespace Assignment3.Tests.Services
                 .Returns(Task.CompletedTask);
 
             _restaurantRepositoryMock
+                .Setup(x => x.IsRestaurantOwnerAsync(10, 1))
+                .ReturnsAsync(false);
+
+            _restaurantRepositoryMock
                 .Setup(x => x.SaveAsync())
                 .Returns(Task.CompletedTask);
 
             _userRepositoryMock
-                .Setup(x => x.AddUser(It.IsAny<User>()))
+                .Setup(x => x.AddUser(
+                    It.IsAny<User>()))
                 .Callback<User>(user =>
                 {
                     user.Id = 10;
@@ -254,9 +434,14 @@ namespace Assignment3.Tests.Services
             var request = new AddRestaurantOwnerRequestDto
             {
                 RestaurantId = 1,
-                OwnerName = "Rahul Sharma",
-                OwnerEmail = "rahul@example.com",
-                OwnerPassword = "Rahul@12345"
+                Owners = new List<RestaurantOwnerDto>
+                {
+                    new RestaurantOwnerDto
+                    {
+                        OwnerName = "Rahul Sharma",
+                        OwnerEmail = "rahul@example.com"
+                    }
+                }
             };
 
             var result =
@@ -266,7 +451,7 @@ namespace Assignment3.Tests.Services
             Assert.IsTrue(result.Success);
 
             Assert.AreEqual(
-                "Restaurant owner onboarded successfully.",
+                "Restaurant owners onboarded successfully.",
                 result.Message);
 
             _userRepositoryMock.Verify(
@@ -276,8 +461,16 @@ namespace Assignment3.Tests.Services
                         u.Email == "rahul@example.com" &&
                         u.Role == UserRole.admin.ToString() &&
                         u.IsActive &&
-                        u.Balance == 1000 &&
-                        u.Password != "Rahul@12345")),
+                        u.Balance == 0 &&
+                        u.Password != "123456789")),
+                Times.Once);
+
+            _userRepositoryMock.Verify(
+                x => x.SaveAsync(),
+                Times.Once);
+
+            _restaurantRepositoryMock.Verify(
+                x => x.IsRestaurantOwnerAsync(10, 1),
                 Times.Once);
 
             _restaurantRepositoryMock.Verify(
@@ -287,18 +480,15 @@ namespace Assignment3.Tests.Services
                         ro.RestaurantId == 1)),
                 Times.Once);
 
-            _userRepositoryMock.Verify(
-                x => x.SaveAsync(),
-                Times.Once);
-
             _restaurantRepositoryMock.Verify(
                 x => x.SaveAsync(),
                 Times.Once);
         }
 
 
+        // ============================================================
         // ADD RESTAURANT TESTS
-
+        // ============================================================
 
         [TestMethod]
         public async Task AddRestaurantInternalAsync_RestaurantEmailAlreadyExists_ReturnsFailure()
@@ -319,15 +509,22 @@ namespace Assignment3.Tests.Services
             {
                 RestaurantName = "Pizza Palace",
                 RestaurantEmail = "pizza@example.com",
+
                 BuildingNumber = "10",
                 Locality = "Sector 18",
                 City = "Noida",
                 State = "Uttar Pradesh",
                 Country = "India",
                 PostalCode = "201301",
-                OwnerName = "Rahul Sharma",
-                OwnerEmail = "rahul@example.com",
-                OwnerPassword = "Rahul@12345"
+
+                Owners = new List<RestaurantOwnerDto>
+                {
+                    new RestaurantOwnerDto
+                    {
+                        OwnerName = "Rahul Sharma",
+                        OwnerEmail = "rahul@example.com"
+                    }
+                }
             };
 
             var result =
@@ -344,30 +541,39 @@ namespace Assignment3.Tests.Services
                 x => x.AddRestaurant(
                     It.IsAny<Restaurant>()),
                 Times.Never);
+
+            _restaurantRepositoryMock.Verify(
+                x => x.AddAddress(
+                    It.IsAny<Address>()),
+                Times.Never);
         }
 
 
         [TestMethod]
-        public async Task AddRestaurantInternalAsync_RestaurantAndOwnerEmailSame_ReturnsFailure()
+        public async Task AddRestaurantInternalAsync_NoOwners_ReturnsFailure()
         {
             _restaurantRepositoryMock
                 .Setup(x => x.GetRestaurantByEmailAsync(
                     "pizza@example.com"))
                 .ReturnsAsync((Restaurant)null);
 
+            _restaurantRepositoryMock
+                .Setup(x => x.SaveAsync())
+                .Returns(Task.CompletedTask);
+
             var request = new AddRestaurantRequestDto
             {
                 RestaurantName = "Pizza Palace",
                 RestaurantEmail = "pizza@example.com",
+
                 BuildingNumber = "10",
                 Locality = "Sector 18",
                 City = "Noida",
                 State = "Uttar Pradesh",
                 Country = "India",
                 PostalCode = "201301",
-                OwnerName = "Rahul Sharma",
-                OwnerEmail = "pizza@example.com",
-                OwnerPassword = "Rahul@12345"
+
+                Owners = new List<RestaurantOwnerDto>()
             };
 
             var result =
@@ -377,77 +583,46 @@ namespace Assignment3.Tests.Services
             Assert.IsFalse(result.Success);
 
             Assert.AreEqual(
-                "Restaurant email and owner email must be different.",
+                "At least one restaurant owner is required.",
                 result.Message);
+
+            _restaurantRepositoryMock.Verify(
+                x => x.AddAddress(
+                    It.IsAny<Address>()),
+                Times.Once);
 
             _restaurantRepositoryMock.Verify(
                 x => x.AddRestaurant(
                     It.IsAny<Restaurant>()),
+                Times.Once);
+
+            _restaurantRepositoryMock.Verify(
+                x => x.AddRestaurantOwner(
+                    It.IsAny<RestaurantOwner>()),
                 Times.Never);
         }
 
 
         [TestMethod]
-        public async Task AddRestaurantInternalAsync_OwnerEmailAlreadyExists_ReturnsFailure()
+        public async Task AddRestaurantInternalAsync_Success_CreatesRestaurantAddressAndOwner()
         {
             _restaurantRepositoryMock
                 .Setup(x => x.GetRestaurantByEmailAsync(
                     "pizza@example.com"))
                 .ReturnsAsync((Restaurant)null);
 
-            _userRepositoryMock
-                .Setup(x => x.GetUserByEmailAsync(
-                    "rahul@example.com"))
-                .ReturnsAsync(new User
-                {
-                    Id = 10,
-                    Email = "rahul@example.com"
-                });
-
-            var request = new AddRestaurantRequestDto
-            {
-                RestaurantName = "Pizza Palace",
-                RestaurantEmail = "pizza@example.com",
-                BuildingNumber = "10",
-                Locality = "Sector 18",
-                City = "Noida",
-                State = "Uttar Pradesh",
-                Country = "India",
-                PostalCode = "201301",
-                OwnerName = "Rahul Sharma",
-                OwnerEmail = "rahul@example.com",
-                OwnerPassword = "Rahul@12345"
-            };
-
-            var result =
-                await _superAdminService
-                    .AddRestaurantInternalAsync(request);
-
-            Assert.IsFalse(result.Success);
-
-            Assert.AreEqual(
-                "User with this email already exists.",
-                result.Message);
-
-            _restaurantRepositoryMock.Verify(
-                x => x.AddRestaurant(
-                    It.IsAny<Restaurant>()),
-                Times.Never);
-        }
-
-
-        [TestMethod]
-        public async Task AddRestaurantInternalAsync_Success_CreatesRestaurantOwnerAndAddress()
-        {
             _restaurantRepositoryMock
-                .Setup(x => x.GetRestaurantByEmailAsync(
-                    "pizza@example.com"))
-                .ReturnsAsync((Restaurant)null);
+                .Setup(x => x.SaveAsync())
+                .Returns(Task.CompletedTask);
 
             _userRepositoryMock
                 .Setup(x => x.GetUserByEmailAsync(
                     "rahul@example.com"))
                 .ReturnsAsync((User)null);
+
+            _userRepositoryMock
+                .Setup(x => x.SaveAsync())
+                .Returns(Task.CompletedTask);
 
             _restaurantRepositoryMock
                 .Setup(x => x.AddRestaurant(
@@ -455,7 +630,14 @@ namespace Assignment3.Tests.Services
                 .Callback<Restaurant>(restaurant =>
                 {
                     restaurant.Id = 1;
-                    restaurant.AddressId = 20;
+                });
+
+            _restaurantRepositoryMock
+                .Setup(x => x.AddAddress(
+                    It.IsAny<Address>()))
+                .Callback<Address>(address =>
+                {
+                    address.Id = 20;
                 });
 
             _userRepositoryMock
@@ -467,26 +649,29 @@ namespace Assignment3.Tests.Services
                 });
 
             _restaurantRepositoryMock
-                .Setup(x => x.SaveAsync())
-                .Returns(Task.CompletedTask);
-
-            _userRepositoryMock
-                .Setup(x => x.SaveAsync())
-                .Returns(Task.CompletedTask);
+                .Setup(x => x.IsRestaurantOwnerAsync(10, 1))
+                .ReturnsAsync(false);
 
             var request = new AddRestaurantRequestDto
             {
                 RestaurantName = "Pizza Palace",
                 RestaurantEmail = "pizza@example.com",
+
                 BuildingNumber = "10",
                 Locality = "Sector 18",
                 City = "Noida",
                 State = "Uttar Pradesh",
                 Country = "India",
                 PostalCode = "201301",
-                OwnerName = "Rahul Sharma",
-                OwnerEmail = "rahul@example.com",
-                OwnerPassword = "Rahul@12345"
+
+                Owners = new List<RestaurantOwnerDto>
+                {
+                    new RestaurantOwnerDto
+                    {
+                        OwnerName = "Rahul Sharma",
+                        OwnerEmail = "rahul@example.com"
+                    }
+                }
             };
 
             var result =
@@ -496,16 +681,8 @@ namespace Assignment3.Tests.Services
             Assert.IsTrue(result.Success);
 
             Assert.AreEqual(
-                "Restaurant and owner onboarded successfully.",
+                "Restaurant and owners onboarded successfully.",
                 result.Message);
-
-            _restaurantRepositoryMock.Verify(
-                x => x.AddRestaurant(
-                    It.Is<Restaurant>(r =>
-                        r.Name == "Pizza Palace" &&
-                        r.Email == "pizza@example.com" &&
-                        r.IsActive)),
-                Times.Once);
 
             _restaurantRepositoryMock.Verify(
                 x => x.AddAddress(
@@ -515,7 +692,17 @@ namespace Assignment3.Tests.Services
                         a.City == "Noida" &&
                         a.State == "Uttar Pradesh" &&
                         a.Country == "India" &&
-                        a.PostalCode == "201301")),
+                        a.PostalCode == "201301" &&
+                        a.UserId == null)),
+                Times.Once);
+
+            _restaurantRepositoryMock.Verify(
+                x => x.AddRestaurant(
+                    It.Is<Restaurant>(r =>
+                        r.Name == "Pizza Palace" &&
+                        r.Email == "pizza@example.com" &&
+                        r.IsActive &&
+                        r.AddressId == 20)),
                 Times.Once);
 
             _userRepositoryMock.Verify(
@@ -525,7 +712,12 @@ namespace Assignment3.Tests.Services
                         u.Email == "rahul@example.com" &&
                         u.Role == UserRole.admin.ToString() &&
                         u.IsActive &&
-                        u.Password != "Rahul@12345")),
+                        u.Balance == 0 &&
+                        u.Password != "123456789")),
+                Times.Once);
+
+            _restaurantRepositoryMock.Verify(
+                x => x.IsRestaurantOwnerAsync(10, 1),
                 Times.Once);
 
             _restaurantRepositoryMock.Verify(

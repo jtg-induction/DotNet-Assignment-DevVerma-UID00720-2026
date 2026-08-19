@@ -4,6 +4,7 @@ using Assignment3.DTOs.Common;
 using Assignment3.Services.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http.Results;
@@ -43,19 +44,25 @@ namespace Assignment3.Tests.Controllers
                 State = "Uttar Pradesh",
                 Country = "India",
                 PostalCode = "201301",
-                OwnerName = "Rahul Sharma",
-                OwnerEmail = "rahul@example.com",
-                OwnerPassword = "Rahul@12345"
+
+                Owners = new List<RestaurantOwnerDto>
+                {
+                    new RestaurantOwnerDto
+                    {
+                        OwnerName = "Rahul Sharma",
+                        OwnerEmail = "rahul@example.com"
+                    }
+                }
             };
 
             var serviceResponse = new ApiResponse<object>
             {
                 Success = true,
-                Message = "Restaurant and owner onboarded successfully.",
+                Message =
+                    "Restaurant and owners onboarded successfully.",
                 Data = new
                 {
-                    RestaurantId = 1,
-                    OwnerId = 2
+                    RestaurantId = 1
                 }
             };
 
@@ -68,17 +75,20 @@ namespace Assignment3.Tests.Controllers
 
             Assert.IsInstanceOfType(
                 result,
-                typeof(OkNegotiatedContentResult<ApiResponse<object>>));
+                typeof(
+                    OkNegotiatedContentResult<
+                        ApiResponse<object>>));
 
             var okResult =
                 (OkNegotiatedContentResult<ApiResponse<object>>)result;
 
             Assert.IsNotNull(okResult.Content);
 
-            Assert.IsTrue(okResult.Content.Success);
+            Assert.IsTrue(
+                okResult.Content.Success);
 
             Assert.AreEqual(
-                "Restaurant and owner onboarded successfully.",
+                "Restaurant and owners onboarded successfully.",
                 okResult.Content.Message);
 
             _superAdminServiceMock.Verify(
@@ -100,15 +110,22 @@ namespace Assignment3.Tests.Controllers
                 State = "Uttar Pradesh",
                 Country = "India",
                 PostalCode = "201301",
-                OwnerName = "Rahul Sharma",
-                OwnerEmail = "rahul@example.com",
-                OwnerPassword = "Rahul@12345"
+
+                Owners = new List<RestaurantOwnerDto>
+                {
+                    new RestaurantOwnerDto
+                    {
+                        OwnerName = "Rahul Sharma",
+                        OwnerEmail = "rahul@example.com"
+                    }
+                }
             };
 
             var serviceResponse = new ApiResponse<object>
             {
                 Success = false,
-                Message = "Restaurant email already exists.",
+                Message =
+                    "Restaurant with this email already exists.",
                 Data = null
             };
 
@@ -121,7 +138,9 @@ namespace Assignment3.Tests.Controllers
 
             Assert.IsInstanceOfType(
                 result,
-                typeof(NegotiatedContentResult<ApiResponse<object>>));
+                typeof(
+                    NegotiatedContentResult<
+                        ApiResponse<object>>));
 
             var badRequest =
                 (NegotiatedContentResult<ApiResponse<object>>)result;
@@ -130,10 +149,11 @@ namespace Assignment3.Tests.Controllers
                 HttpStatusCode.BadRequest,
                 badRequest.StatusCode);
 
-            Assert.IsFalse(badRequest.Content.Success);
+            Assert.IsFalse(
+                badRequest.Content.Success);
 
             Assert.AreEqual(
-                "Restaurant email already exists.",
+                "Restaurant with this email already exists.",
                 badRequest.Content.Message);
 
             _superAdminServiceMock.Verify(
@@ -150,18 +170,24 @@ namespace Assignment3.Tests.Controllers
             var request = new AddRestaurantOwnerRequestDto
             {
                 RestaurantId = 1,
-                OwnerName = "Rahul Sharma",
-                OwnerEmail = "rahul@example.com",
-                OwnerPassword = "Rahul@12345"
+
+                Owners = new List<RestaurantOwnerDto>
+                {
+                    new RestaurantOwnerDto
+                    {
+                        OwnerName = "Rahul Sharma",
+                        OwnerEmail = "rahul@example.com"
+                    }
+                }
             };
 
             var serviceResponse = new ApiResponse<object>
             {
                 Success = true,
-                Message = "Restaurant owner onboarded successfully.",
+                Message =
+                    "Restaurant owners onboarded successfully.",
                 Data = new
                 {
-                    OwnerId = 2,
                     RestaurantId = 1
                 }
             };
@@ -175,17 +201,21 @@ namespace Assignment3.Tests.Controllers
 
             Assert.IsInstanceOfType(
                 result,
-                typeof(OkNegotiatedContentResult<ApiResponse<object>>));
+                typeof(
+                    OkNegotiatedContentResult<
+                        ApiResponse<object>>));
 
             var okResult =
                 (OkNegotiatedContentResult<ApiResponse<object>>)result;
 
-            Assert.IsNotNull(okResult.Content);
+            Assert.IsNotNull(
+                okResult.Content);
 
-            Assert.IsTrue(okResult.Content.Success);
+            Assert.IsTrue(
+                okResult.Content.Success);
 
             Assert.AreEqual(
-                "Restaurant owner onboarded successfully.",
+                "Restaurant owners onboarded successfully.",
                 okResult.Content.Message);
 
             _superAdminServiceMock.Verify(
@@ -200,9 +230,15 @@ namespace Assignment3.Tests.Controllers
             var request = new AddRestaurantOwnerRequestDto
             {
                 RestaurantId = 1,
-                OwnerName = "Rahul Sharma",
-                OwnerEmail = "rahul@example.com",
-                OwnerPassword = "Rahul@12345"
+
+                Owners = new List<RestaurantOwnerDto>
+                {
+                    new RestaurantOwnerDto
+                    {
+                        OwnerName = "Rahul Sharma",
+                        OwnerEmail = "rahul@example.com"
+                    }
+                }
             };
 
             var serviceResponse = new ApiResponse<object>
@@ -221,7 +257,9 @@ namespace Assignment3.Tests.Controllers
 
             Assert.IsInstanceOfType(
                 result,
-                typeof(NegotiatedContentResult<ApiResponse<object>>));
+                typeof(
+                    NegotiatedContentResult<
+                        ApiResponse<object>>));
 
             var badRequest =
                 (NegotiatedContentResult<ApiResponse<object>>)result;
@@ -230,7 +268,8 @@ namespace Assignment3.Tests.Controllers
                 HttpStatusCode.BadRequest,
                 badRequest.StatusCode);
 
-            Assert.IsFalse(badRequest.Content.Success);
+            Assert.IsFalse(
+                badRequest.Content.Success);
 
             Assert.AreEqual(
                 "Restaurant not found.",
