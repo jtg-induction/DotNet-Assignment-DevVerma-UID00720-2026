@@ -57,6 +57,15 @@ namespace Assignment3.Repositories.Implementations
                 .FirstOrDefaultAsync(r => r.Id == restaurantId);
         }
 
+        public async Task<bool> IsRestaurantOwnerAsync(long userId,int restaurantId)
+        {
+            return await _context.RestaurantOwners
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.UserId == userId &&
+                    x.RestaurantId == restaurantId);
+        }
+
         public void AddRestaurant(Restaurant restaurant)
         {
             _context.Restaurants.Add(restaurant);

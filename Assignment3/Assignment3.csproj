@@ -188,6 +188,7 @@
     <Compile Include="DTOs\OwnerOrderDto.cs" />
     <Compile Include="DTOs\RefreshTokenResponseDto.cs" />
     <Compile Include="DTOs\RestaurantDto.cs" />
+    <Compile Include="DTOs\RestaurantOwnerDto.cs" />
     <Compile Include="DTOs\SignUpRequestDto.cs" />
     <Compile Include="DTOs\UpdatePasswordRequestDto.cs" />
     <Compile Include="Enums\OrderStatus.cs" />
