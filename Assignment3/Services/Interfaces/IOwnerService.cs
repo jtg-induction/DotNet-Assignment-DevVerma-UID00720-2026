@@ -9,5 +9,9 @@ namespace Assignment3.Services.Interfaces
         Task<ApiResponse<object>> GetOwnerOrdersAsync(
             long ownerId,
             OwnerOrderDashboardRequestDto request);
+
+        Task<ApiResponse<object>> UpdateOrderStatusAsync(
+            UpdateOrderStatusRequestDto request, 
+            long userId);
     }
 }

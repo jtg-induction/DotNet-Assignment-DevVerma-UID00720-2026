@@ -375,7 +375,7 @@ namespace Assignment3.Services.Implementations
                 };
             }
 
-            if (order.Status != OrderStatus.placed.ToString())
+            if (order.Status != OrderStatus.placed.ToString() && isCustomer)
             {
                 return new ApiResponse<object>
                 {
@@ -441,7 +441,8 @@ namespace Assignment3.Services.Implementations
                 menuItem.UpdatedAt = DateTime.UtcNow;
             }
 
-            order.Status = OrderStatus.cancelled.ToString();
+            order.Status = isRestaurantOwner ?
+                OrderStatus.rejected.ToString() : OrderStatus.cancelled.ToString();
             order.UpdatedAt = DateTime.UtcNow;
 
             await _orderRepository.SaveAsync();

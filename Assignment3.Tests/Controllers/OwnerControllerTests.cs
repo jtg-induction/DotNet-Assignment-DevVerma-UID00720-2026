@@ -234,5 +234,250 @@ namespace Assignment3.Tests.Controllers
 
             await _controller.GetOrders(request);
         }
+
+        // UPDATE ORDER STATUS TESTS
+
+        [TestMethod]
+        public async Task UpdateOrderStatus_Success_ReturnsOk()
+        {
+            var request = new UpdateOrderStatusRequestDto
+            {
+                OrderId = 100,
+                Status = "accepted"
+            };
+
+            var serviceResponse =
+                new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Order status updated successfully.",
+                    Data = new
+                    {
+                        OrderId = 100,
+                        Status = "accepted"
+                    }
+                };
+
+            _ownerServiceMock
+                .Setup(x => x.UpdateOrderStatusAsync(
+                    request,
+                    1))
+                .ReturnsAsync(serviceResponse);
+
+            var result =
+                await _controller.UpdateOrderStatus(request);
+
+            Assert.IsInstanceOfType(
+                result,
+                typeof(OkNegotiatedContentResult<ApiResponse<object>>));
+
+            var okResult =
+                (OkNegotiatedContentResult<ApiResponse<object>>)result;
+
+            Assert.IsNotNull(okResult.Content);
+
+            Assert.IsTrue(okResult.Content.Success);
+
+            Assert.AreEqual(
+                "Order status updated successfully.",
+                okResult.Content.Message);
+
+            _ownerServiceMock.Verify(
+                x => x.UpdateOrderStatusAsync(
+                    request,
+                    1),
+                Times.Once);
+        }
+
+
+        [TestMethod]
+        public async Task UpdateOrderStatus_ServiceFailure_ReturnsBadRequest()
+        {
+            var request = new UpdateOrderStatusRequestDto
+            {
+                OrderId = 100,
+                Status = "accepted"
+            };
+
+            var serviceResponse =
+                new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Order not found.",
+                    Data = null
+                };
+
+            _ownerServiceMock
+                .Setup(x => x.UpdateOrderStatusAsync(
+                    request,
+                    1))
+                .ReturnsAsync(serviceResponse);
+
+            var result =
+                await _controller.UpdateOrderStatus(request);
+
+            Assert.IsInstanceOfType(
+                result,
+                typeof(NegotiatedContentResult<ApiResponse<object>>));
+
+            var badRequestResult =
+                (NegotiatedContentResult<ApiResponse<object>>)result;
+
+            Assert.IsNotNull(
+                badRequestResult.Content);
+
+            Assert.IsFalse(
+                badRequestResult.Content.Success);
+
+            Assert.AreEqual(
+                "Order not found.",
+                badRequestResult.Content.Message);
+
+            _ownerServiceMock.Verify(
+                x => x.UpdateOrderStatusAsync(
+                    request,
+                    1),
+                Times.Once);
+        }
+
+
+        [TestMethod]
+        public async Task UpdateOrderStatus_NoUserIdClaim_ReturnsUnauthorized()
+        {
+            var identity = new ClaimsIdentity(
+                new[]
+                {
+            new Claim(
+                ClaimTypes.Name,
+                "Test User")
+                },
+                "TestAuthentication");
+
+            _controller.User =
+                new ClaimsPrincipal(identity);
+
+            var request =
+                new UpdateOrderStatusRequestDto
+                {
+                    OrderId = 100,
+                    Status = "accepted"
+                };
+
+            var result =
+                await _controller.UpdateOrderStatus(request);
+
+            Assert.IsInstanceOfType(
+                result,
+                typeof(UnauthorizedResult));
+
+            _ownerServiceMock.Verify(
+                x => x.UpdateOrderStatusAsync(
+                    It.IsAny<UpdateOrderStatusRequestDto>(),
+                    It.IsAny<long>()),
+                Times.Never);
+        }
+
+
+        [TestMethod]
+        public async Task UpdateOrderStatus_PassesAuthenticatedUserIdToService()
+        {
+            var request =
+                new UpdateOrderStatusRequestDto
+                {
+                    OrderId = 100,
+                    Status = "dispatched"
+                };
+
+            var serviceResponse =
+                new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Order status updated successfully.",
+                    Data = null
+                };
+
+            _ownerServiceMock
+                .Setup(x => x.UpdateOrderStatusAsync(
+                    request,
+                    25))
+                .ReturnsAsync(serviceResponse);
+
+            await SetUserIdAndUpdateOrderStatus(
+                request,
+                25);
+
+            _ownerServiceMock.Verify(
+                x => x.UpdateOrderStatusAsync(
+                    request,
+                    25),
+                Times.Once);
+        }
+
+
+        [TestMethod]
+        public async Task UpdateOrderStatus_RejectedStatus_ServiceFailure_ReturnsBadRequest()
+        {
+            var request = new UpdateOrderStatusRequestDto
+            {
+                OrderId = 100,
+                Status = "rejected"
+            };
+
+            var serviceResponse =
+                new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Order status cannot be changed.",
+                    Data = null
+                };
+
+            _ownerServiceMock
+                .Setup(x => x.UpdateOrderStatusAsync(
+                    request,
+                    1))
+                .ReturnsAsync(serviceResponse);
+
+            var result =
+                await _controller.UpdateOrderStatus(request);
+
+            Assert.IsInstanceOfType(
+                result,
+                typeof(NegotiatedContentResult<ApiResponse<object>>));
+
+            var badRequestResult =
+                (NegotiatedContentResult<ApiResponse<object>>)result;
+
+            Assert.IsFalse(
+                badRequestResult.Content.Success);
+
+            Assert.AreEqual(
+                "Order status cannot be changed.",
+                badRequestResult.Content.Message);
+
+            _ownerServiceMock.Verify(
+                x => x.UpdateOrderStatusAsync(
+                    request,
+                    1),
+                Times.Once);
+        }
+
+        private async Task SetUserIdAndUpdateOrderStatus(
+            UpdateOrderStatusRequestDto request,
+            long userId)
+        {
+            var identity = new ClaimsIdentity(
+                new[]
+                {
+            new Claim(
+                ClaimTypes.NameIdentifier,
+                userId.ToString())
+                },
+                "TestAuthentication");
+
+            _controller.User =
+                new ClaimsPrincipal(identity);
+
+            await _controller.UpdateOrderStatus(request);
+        }
     }
 }
