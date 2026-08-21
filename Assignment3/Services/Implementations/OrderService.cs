@@ -385,6 +385,20 @@ namespace Assignment3.Services.Implementations
                 };
             }
 
+            if ((order.Status == OrderStatus.delivered.ToString() ||
+                order.Status == OrderStatus.cancelled.ToString() ||
+                order.Status == OrderStatus.rejected.ToString()) 
+                && isRestaurantOwner
+                )
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Order cannot be rejected",
+                    Data = null
+                };
+            }
+
             var orderItems = await _orderRepository
                 .GetOrderItemsAsync(orderId);
 

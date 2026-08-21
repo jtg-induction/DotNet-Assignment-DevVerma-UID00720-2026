@@ -6,6 +6,7 @@ using Assignment3.Repositories.Implementations;
 using Assignment3.Repositories.Interfaces;
 using Assignment3.Services.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -165,6 +166,50 @@ namespace Assignment3.Services.Implementations
             }
         }
 
+        private static readonly Dictionary<string, List<string>> AllowedTransitions = new Dictionary<string, List<string>>
+        {
+            {
+                OrderStatus.placed.ToString(),
+                new List<string>
+                {
+                    OrderStatus.accepted.ToString(),
+                    OrderStatus.rejected.ToString()
+                }
+            },
+
+            {
+                OrderStatus.accepted.ToString(),
+                new List<string>
+                {
+                    OrderStatus.dispatched.ToString(),
+                    OrderStatus.rejected.ToString()
+                }
+            },
+
+            {
+                OrderStatus.dispatched.ToString(),
+                new List<string>
+                {
+                    OrderStatus.delivered.ToString(),
+                    OrderStatus.rejected.ToString()
+                }
+            },
+
+            {
+                OrderStatus.rejected.ToString(),
+                new List<string>()
+            },
+
+            {
+                OrderStatus.cancelled.ToString(),
+                new List<string>()
+            },
+
+            {
+                OrderStatus.delivered.ToString(),
+                new List<string>()
+            }
+        };
 
         public async Task<ApiResponse<object>> UpdateOrderStatusInternalAsync(
             UpdateOrderStatusRequestDto request,
@@ -198,41 +243,23 @@ namespace Assignment3.Services.Implementations
                 };
             }
 
-            if (string.Equals(
-                request.Status,
-                "cancelled",
-                StringComparison.OrdinalIgnoreCase))
+            var currentStatus = order.Status.ToLower();
+
+            var requestedStatus = request.Status.ToLower();
+
+            if (!AllowedTransitions.ContainsKey(currentStatus) ||
+                !AllowedTransitions[currentStatus].Contains(requestedStatus))
             {
                 return new ApiResponse<object>
                 {
                     Success = false,
-                    Message = "Owner cannot cancel an order.",
+                    Message = "Order status cannot be changed.",
                     Data = null
                 };
             }
 
-            var currentStatus =
-                order.Status.ToLower();
-
-            var requestedStatus =
-                request.Status.ToLower();
-
-
-            // REJECTED
-            if (requestedStatus == "rejected")
+            if (requestedStatus == OrderStatus.rejected.ToString())
             {
-                if (currentStatus == "cancelled" ||
-                    currentStatus == "delivered" ||
-                    currentStatus == "rejected")
-                {
-                    return new ApiResponse<object>
-                    {
-                        Success = false,
-                        Message = "Order status cannot be changed.",
-                        Data = null
-                    };
-                }
-
                 var response = await _orderService
                         .CancelOrderInternalAsync(
                             order.Id,
@@ -241,61 +268,6 @@ namespace Assignment3.Services.Implementations
 
                 return response;
             }
-
-
-            // ACCEPTED
-            if (requestedStatus == "accepted")
-            {
-                if (currentStatus != "placed")
-                {
-                    return new ApiResponse<object>
-                    {
-                        Success = false,
-                        Message = "Order can only be accepted when its current status is placed.",
-                        Data = null
-                    };
-                }
-            }
-
-            // DISPATCHED
-            else if (requestedStatus == "dispatched")
-            {
-                if (currentStatus != "accepted")
-                {
-                    return new ApiResponse<object>
-                    {
-                        Success = false,
-                        Message = "Order can only be dispatched when its current status is accepted.",
-                        Data = null
-                    };
-                }
-            }
-
-            // DELIVERED
-            else if (requestedStatus == "delivered")
-            {
-                if (currentStatus != "dispatched")
-                {
-                    return new ApiResponse<object>
-                    {
-                        Success = false,
-                        Message = "Order can only be delivered when its current status is dispatched.",
-                        Data = null
-                    };
-                }
-            }
-
-            // INVALID STATUS
-            else
-            {
-                return new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "Invalid order status.",
-                    Data = null
-                };
-            }
-
 
             order.Status = requestedStatus;
             order.UpdatedAt = DateTime.UtcNow;

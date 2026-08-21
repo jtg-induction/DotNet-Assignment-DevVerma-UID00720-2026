@@ -448,7 +448,7 @@ namespace Assignment3.Tests.Services
             var request = new UpdateOrderStatusRequestDto
             {
                 OrderId = 100,
-                Status = "accepted"
+                Status = OrderStatus.accepted.ToString()
             };
 
             var result =
@@ -495,7 +495,7 @@ namespace Assignment3.Tests.Services
             var request = new UpdateOrderStatusRequestDto
             {
                 OrderId = 100,
-                Status = "accepted"
+                Status = OrderStatus.accepted.ToString()
             };
 
             var result =
@@ -507,47 +507,6 @@ namespace Assignment3.Tests.Services
 
             Assert.AreEqual(
                 "You are not an owner of this restaurant.",
-                result.Message);
-
-            _orderRepositoryMock.Verify(
-                x => x.SaveAsync(),
-                Times.Never);
-        }
-
-
-        [TestMethod]
-        public async Task UpdateOrderStatusInternalAsync_OwnerCannotCancel_ReturnsFailure()
-        {
-            var order = new Order
-            {
-                Id = 100,
-                RestaurantId = 1,
-                Status = OrderStatus.placed.ToString()
-            };
-
-            _orderRepositoryMock
-                .Setup(x => x.GetOrderForUpdateAsync(100))
-                .ReturnsAsync(order);
-
-            _orderRepositoryMock
-                .Setup(x => x.IsRestaurantOwnerAsync(10, 1))
-                .ReturnsAsync(true);
-
-            var request = new UpdateOrderStatusRequestDto
-            {
-                OrderId = 100,
-                Status = "cancelled"
-            };
-
-            var result =
-                await _ownerService.UpdateOrderStatusInternalAsync(
-                    request,
-                    10);
-
-            Assert.IsFalse(result.Success);
-
-            Assert.AreEqual(
-                "Owner cannot cancel an order.",
                 result.Message);
 
             _orderRepositoryMock.Verify(
@@ -588,7 +547,7 @@ namespace Assignment3.Tests.Services
             var request = new UpdateOrderStatusRequestDto
             {
                 OrderId = 100,
-                Status = "accepted"
+                Status = OrderStatus.accepted.ToString()
             };
 
             var result =
@@ -603,12 +562,19 @@ namespace Assignment3.Tests.Services
                 result.Message);
 
             Assert.AreEqual(
-                "accepted",
+                OrderStatus.accepted.ToString(),
                 order.Status);
 
             _orderRepositoryMock.Verify(
                 x => x.SaveAsync(),
                 Times.Once);
+
+            _orderServiceMock.Verify(
+                x => x.CancelOrderInternalAsync(
+                    It.IsAny<long>(),
+                    It.IsAny<long>(),
+                    It.IsAny<string>()),
+                Times.Never);
         }
 
 
@@ -637,7 +603,7 @@ namespace Assignment3.Tests.Services
             var request = new UpdateOrderStatusRequestDto
             {
                 OrderId = 100,
-                Status = "dispatched"
+                Status = OrderStatus.dispatched.ToString()
             };
 
             var result =
@@ -652,7 +618,7 @@ namespace Assignment3.Tests.Services
                 result.Message);
 
             Assert.AreEqual(
-                "dispatched",
+                OrderStatus.dispatched.ToString(),
                 order.Status);
 
             _orderRepositoryMock.Verify(
@@ -686,7 +652,7 @@ namespace Assignment3.Tests.Services
             var request = new UpdateOrderStatusRequestDto
             {
                 OrderId = 100,
-                Status = "delivered"
+                Status = OrderStatus.delivered.ToString()
             };
 
             var result =
@@ -701,7 +667,7 @@ namespace Assignment3.Tests.Services
                 result.Message);
 
             Assert.AreEqual(
-                "delivered",
+                OrderStatus.delivered.ToString(),
                 order.Status);
 
             _orderRepositoryMock.Verify(
@@ -710,7 +676,7 @@ namespace Assignment3.Tests.Services
         }
 
 
-        // INVALID STATUS TRANSITIONS
+        // INVALID TRANSITIONS
 
         [TestMethod]
         public async Task UpdateOrderStatusInternalAsync_AcceptedFromDispatched_ReturnsFailure()
@@ -733,7 +699,7 @@ namespace Assignment3.Tests.Services
             var request = new UpdateOrderStatusRequestDto
             {
                 OrderId = 100,
-                Status = "accepted"
+                Status = OrderStatus.accepted.ToString()
             };
 
             var result =
@@ -744,7 +710,7 @@ namespace Assignment3.Tests.Services
             Assert.IsFalse(result.Success);
 
             Assert.AreEqual(
-                "Order can only be accepted when its current status is placed.",
+                "Order status cannot be changed.",
                 result.Message);
 
             _orderRepositoryMock.Verify(
@@ -774,7 +740,7 @@ namespace Assignment3.Tests.Services
             var request = new UpdateOrderStatusRequestDto
             {
                 OrderId = 100,
-                Status = "dispatched"
+                Status = OrderStatus.dispatched.ToString()
             };
 
             var result =
@@ -785,7 +751,7 @@ namespace Assignment3.Tests.Services
             Assert.IsFalse(result.Success);
 
             Assert.AreEqual(
-                "Order can only be dispatched when its current status is accepted.",
+                "Order status cannot be changed.",
                 result.Message);
 
             _orderRepositoryMock.Verify(
@@ -815,7 +781,7 @@ namespace Assignment3.Tests.Services
             var request = new UpdateOrderStatusRequestDto
             {
                 OrderId = 100,
-                Status = "delivered"
+                Status = OrderStatus.delivered.ToString()
             };
 
             var result =
@@ -826,7 +792,7 @@ namespace Assignment3.Tests.Services
             Assert.IsFalse(result.Success);
 
             Assert.AreEqual(
-                "Order can only be delivered when its current status is dispatched.",
+                "Order status cannot be changed.",
                 result.Message);
 
             _orderRepositoryMock.Verify(
@@ -835,10 +801,106 @@ namespace Assignment3.Tests.Services
         }
 
 
+        [TestMethod]
+        public async Task UpdateOrderStatusInternalAsync_CancelledFromPlaced_ReturnsFailure()
+        {
+            var order = new Order
+            {
+                Id = 100,
+                RestaurantId = 1,
+                Status = OrderStatus.placed.ToString()
+            };
+
+            _orderRepositoryMock
+                .Setup(x => x.GetOrderForUpdateAsync(100))
+                .ReturnsAsync(order);
+
+            _orderRepositoryMock
+                .Setup(x => x.IsRestaurantOwnerAsync(10, 1))
+                .ReturnsAsync(true);
+
+            var request = new UpdateOrderStatusRequestDto
+            {
+                OrderId = 100,
+                Status = OrderStatus.cancelled.ToString()
+            };
+
+            var result =
+                await _ownerService.UpdateOrderStatusInternalAsync(
+                    request,
+                    10);
+
+            Assert.IsFalse(result.Success);
+
+            Assert.AreEqual(
+                "Order status cannot be changed.",
+                result.Message);
+
+            _orderRepositoryMock.Verify(
+                x => x.SaveAsync(),
+                Times.Never);
+
+            _orderServiceMock.Verify(
+                x => x.CancelOrderInternalAsync(
+                    It.IsAny<long>(),
+                    It.IsAny<long>(),
+                    It.IsAny<string>()),
+                Times.Never);
+        }
+
+
+        [TestMethod]
+        public async Task UpdateOrderStatusInternalAsync_InvalidStatus_ReturnsFailure()
+        {
+            var order = new Order
+            {
+                Id = 100,
+                RestaurantId = 1,
+                Status = OrderStatus.placed.ToString()
+            };
+
+            _orderRepositoryMock
+                .Setup(x => x.GetOrderForUpdateAsync(100))
+                .ReturnsAsync(order);
+
+            _orderRepositoryMock
+                .Setup(x => x.IsRestaurantOwnerAsync(10, 1))
+                .ReturnsAsync(true);
+
+            var request = new UpdateOrderStatusRequestDto
+            {
+                OrderId = 100,
+                Status = "something_invalid"
+            };
+
+            var result =
+                await _ownerService.UpdateOrderStatusInternalAsync(
+                    request,
+                    10);
+
+            Assert.IsFalse(result.Success);
+
+            Assert.AreEqual(
+                "Order status cannot be changed.",
+                result.Message);
+
+            _orderRepositoryMock.Verify(
+                x => x.SaveAsync(),
+                Times.Never);
+
+            _orderServiceMock.Verify(
+                x => x.CancelOrderInternalAsync(
+                    It.IsAny<long>(),
+                    It.IsAny<long>(),
+                    It.IsAny<string>()),
+                Times.Never);
+        }
+
+
         // REJECTED
 
         [TestMethod]
-        public async Task UpdateOrderStatusInternalAsync_Rejected_CallsCancelOrderService()
+        public async Task UpdateOrderStatusInternalAsync_PlacedToRejected_CallsCancelOrderService()
         {
             var order = new Order
             {
@@ -872,7 +934,131 @@ namespace Assignment3.Tests.Services
             var request = new UpdateOrderStatusRequestDto
             {
                 OrderId = 100,
-                Status = "rejected"
+                Status = OrderStatus.rejected.ToString()
+            };
+
+            var result =
+                await _ownerService.UpdateOrderStatusInternalAsync(
+                    request,
+                    10);
+
+            Assert.IsTrue(result.Success);
+
+            Assert.AreEqual(
+                "Order rejected successfully.",
+                result.Message);
+
+            _orderServiceMock.Verify(
+                x => x.CancelOrderInternalAsync(
+                    100,
+                    10,
+                    UserRole.admin.ToString()),
+                Times.Once);
+
+            _orderRepositoryMock.Verify(
+                x => x.SaveAsync(),
+                Times.Never);
+        }
+
+
+        [TestMethod]
+        public async Task UpdateOrderStatusInternalAsync_AcceptedToRejected_CallsCancelOrderService()
+        {
+            var order = new Order
+            {
+                Id = 100,
+                RestaurantId = 1,
+                Status = OrderStatus.accepted.ToString()
+            };
+
+            _orderRepositoryMock
+                .Setup(x => x.GetOrderForUpdateAsync(100))
+                .ReturnsAsync(order);
+
+            _orderRepositoryMock
+                .Setup(x => x.IsRestaurantOwnerAsync(10, 1))
+                .ReturnsAsync(true);
+
+            var cancelResponse = new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Order rejected successfully.",
+                Data = null
+            };
+
+            _orderServiceMock
+                .Setup(x => x.CancelOrderInternalAsync(
+                    100,
+                    10,
+                    UserRole.admin.ToString()))
+                .ReturnsAsync(cancelResponse);
+
+            var request = new UpdateOrderStatusRequestDto
+            {
+                OrderId = 100,
+                Status = OrderStatus.rejected.ToString()
+            };
+
+            var result =
+                await _ownerService.UpdateOrderStatusInternalAsync(
+                    request,
+                    10);
+
+            Assert.IsTrue(result.Success);
+
+            Assert.AreEqual(
+                "Order rejected successfully.",
+                result.Message);
+
+            _orderServiceMock.Verify(
+                x => x.CancelOrderInternalAsync(
+                    100,
+                    10,
+                    UserRole.admin.ToString()),
+                Times.Once);
+
+            _orderRepositoryMock.Verify(
+                x => x.SaveAsync(),
+                Times.Never);
+        }
+
+
+        [TestMethod]
+        public async Task UpdateOrderStatusInternalAsync_DispatchedToRejected_CallsCancelOrderService()
+        {
+            var order = new Order
+            {
+                Id = 100,
+                RestaurantId = 1,
+                Status = OrderStatus.dispatched.ToString()
+            };
+
+            _orderRepositoryMock
+                .Setup(x => x.GetOrderForUpdateAsync(100))
+                .ReturnsAsync(order);
+
+            _orderRepositoryMock
+                .Setup(x => x.IsRestaurantOwnerAsync(10, 1))
+                .ReturnsAsync(true);
+
+            var cancelResponse = new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Order rejected successfully.",
+                Data = null
+            };
+
+            _orderServiceMock
+                .Setup(x => x.CancelOrderInternalAsync(
+                    100,
+                    10,
+                    UserRole.admin.ToString()))
+                .ReturnsAsync(cancelResponse);
+
+            var request = new UpdateOrderStatusRequestDto
+            {
+                OrderId = 100,
+                Status = OrderStatus.rejected.ToString()
             };
 
             var result =
@@ -920,7 +1106,7 @@ namespace Assignment3.Tests.Services
             var request = new UpdateOrderStatusRequestDto
             {
                 OrderId = 100,
-                Status = "rejected"
+                Status = OrderStatus.rejected.ToString()
             };
 
             var result =
@@ -964,7 +1150,7 @@ namespace Assignment3.Tests.Services
             var request = new UpdateOrderStatusRequestDto
             {
                 OrderId = 100,
-                Status = "rejected"
+                Status = OrderStatus.rejected.ToString()
             };
 
             var result =
@@ -1008,7 +1194,7 @@ namespace Assignment3.Tests.Services
             var request = new UpdateOrderStatusRequestDto
             {
                 OrderId = 100,
-                Status = "rejected"
+                Status = OrderStatus.rejected.ToString()
             };
 
             var result =
@@ -1027,47 +1213,6 @@ namespace Assignment3.Tests.Services
                     It.IsAny<long>(),
                     It.IsAny<long>(),
                     It.IsAny<string>()),
-                Times.Never);
-        }
-
-
-        [TestMethod]
-        public async Task UpdateOrderStatusInternalAsync_InvalidStatus_ReturnsFailure()
-        {
-            var order = new Order
-            {
-                Id = 100,
-                RestaurantId = 1,
-                Status = OrderStatus.placed.ToString()
-            };
-
-            _orderRepositoryMock
-                .Setup(x => x.GetOrderForUpdateAsync(100))
-                .ReturnsAsync(order);
-
-            _orderRepositoryMock
-                .Setup(x => x.IsRestaurantOwnerAsync(10, 1))
-                .ReturnsAsync(true);
-
-            var request = new UpdateOrderStatusRequestDto
-            {
-                OrderId = 100,
-                Status = "something_invalid"
-            };
-
-            var result =
-                await _ownerService.UpdateOrderStatusInternalAsync(
-                    request,
-                    10);
-
-            Assert.IsFalse(result.Success);
-
-            Assert.AreEqual(
-                "Invalid order status.",
-                result.Message);
-
-            _orderRepositoryMock.Verify(
-                x => x.SaveAsync(),
                 Times.Never);
         }
     }
