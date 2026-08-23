@@ -54,6 +54,9 @@ namespace Assignment3
             container.RegisterType<ISuperAdminService, SuperAdminService>();
             container.RegisterType<IOwnerRepository, OwnerRepository>();
             container.RegisterType<IOwnerService, OwnerService>();
+            container.RegisterType<IReportingRepository, ReportingRepository>();
+            container.RegisterType<IReportingService, ReportingService>();
+            container.RegisterType<IReportRenderer, ReportRenderer>();
 
             container.RegisterType<JwtAuthenticationFilter>();
         }
