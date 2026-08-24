@@ -20,5 +20,10 @@ namespace Assignment3.Repositories.Interfaces
         Task SaveAsync();
 
         Task<Order> GetOrderDetailsAsync(long orderId, long userId);
+
+        Task<Order> GetOrderForUpdateAsync(long orderId);
+
+        Task<bool> IsRestaurantOwnerAsync(long userId, int restaurantId);
+        Task<List<OrderItem>> GetOrderItemsAsync(long orderId);
     }
 }

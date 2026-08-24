@@ -66,5 +66,53 @@ namespace Assignment3.Controllers
 
             return Ok(response);
         }
+
+        [HttpPost]
+        [Authorize]
+        [Route("{orderId}/cancel")]
+        public async Task<IHttpActionResult> CancelOrder(long orderId)
+        {
+            var userIdClaim = ((ClaimsPrincipal)User)
+                .FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+            {
+                return Unauthorized();
+            }
+
+            long userId = long.Parse(userIdClaim.Value);
+
+            var roleClaim = ((ClaimsPrincipal)User)
+                .FindFirst(ClaimTypes.Role);
+
+            string role = roleClaim?.Value;
+
+            var response = await _orderService
+                .CancelOrderAsync(orderId, userId, role);
+
+            if (!response.Success)
+            {
+                if (response.Message == "Order not found.")
+                {
+                    return Content(
+                        HttpStatusCode.NotFound,
+                        response);
+                }
+
+                if (response.Message ==
+                    "You are not authorized to cancel this order.")
+                {
+                    return Content(
+                        HttpStatusCode.Forbidden,
+                        response);
+                }
+
+                return Content(
+                    HttpStatusCode.BadRequest,
+                    response);
+            }
+
+            return Ok(response);
+        }
     }
 }
