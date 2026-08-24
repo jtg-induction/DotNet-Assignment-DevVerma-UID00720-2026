@@ -375,12 +375,26 @@ namespace Assignment3.Services.Implementations
                 };
             }
 
-            if (order.Status != OrderStatus.placed.ToString())
+            if (order.Status != OrderStatus.placed.ToString() && isCustomer)
             {
                 return new ApiResponse<object>
                 {
                     Success = false,
                     Message = "Only orders in placed status can be cancelled.",
+                    Data = null
+                };
+            }
+
+            if ((order.Status == OrderStatus.delivered.ToString() ||
+                order.Status == OrderStatus.cancelled.ToString() ||
+                order.Status == OrderStatus.rejected.ToString()) 
+                && isRestaurantOwner
+                )
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Order cannot be rejected",
                     Data = null
                 };
             }
@@ -441,7 +455,8 @@ namespace Assignment3.Services.Implementations
                 menuItem.UpdatedAt = DateTime.UtcNow;
             }
 
-            order.Status = OrderStatus.cancelled.ToString();
+            order.Status = isRestaurantOwner ?
+                OrderStatus.rejected.ToString() : OrderStatus.cancelled.ToString();
             order.UpdatedAt = DateTime.UtcNow;
 
             await _orderRepository.SaveAsync();

@@ -103,6 +103,15 @@ namespace Assignment3.Repositories.Implementations
 
         public async Task<Order> GetOrderForUpdateAsync(long orderId)
         {
+            var trackedOrder = _context.Orders
+                .Local
+                .FirstOrDefault(o =>  o.Id == orderId);
+
+            if(trackedOrder != null)
+            {
+                return trackedOrder;
+            }
+
             var order = await _context.Database
                 .SqlQuery<Order>(
                     @"SELECT * FROM Orders WITH (UPDLOCK, ROWLOCK) WHERE Id = @p0",

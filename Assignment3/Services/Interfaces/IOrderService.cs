@@ -10,5 +10,6 @@ namespace Assignment3.Services.Interfaces
         Task<ApiResponse<object>> GetOrderDetailsAsync(long orderId, long userId);
 
         Task<ApiResponse<object>> CancelOrderAsync(long orderId, long userId, string role);
+        Task<ApiResponse<object>> CancelOrderInternalAsync(long orderId, long userId, string role);
     }
 }
