@@ -23,6 +23,7 @@ namespace Assignment3.Repositories.Implementations
             TopOrderedItemsRequestDto request)
         {
             var query = _context.OrderItems
+                .AsNoTracking()
                 .Where(oi =>
                     oi.Order.Status == OrderStatus.delivered.ToString());
 
@@ -81,6 +82,7 @@ namespace Assignment3.Repositories.Implementations
         public async Task<List<FrequentlyBoughtTogetherDto>> GetFrequentlyBoughtTogetherAsync(int restaurantId)
         {
             var query = _context.OrderItems
+                .AsNoTracking()
                 .Where(oi =>
                     oi.Order.RestaurantId == restaurantId &&
                     oi.Order.Status == OrderStatus.delivered.ToString());
