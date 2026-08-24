@@ -87,6 +87,7 @@
     <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
     </Reference>
+    <Reference Include="System.Design" />
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=6.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Diagnostics.DiagnosticSource.6.0.2\lib\net461\System.Diagnostics.DiagnosticSource.dll</HintPath>
     </Reference>
@@ -107,6 +108,8 @@
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.1.2\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Text.Encodings.Web, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encodings.Web.8.0.0\lib\net462\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
@@ -125,6 +128,8 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
@@ -132,6 +137,18 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
+    <Reference Include="Telerik.Licensing.Runtime, Version=1.9.1.0, Culture=neutral, PublicKeyToken=98bb5b04e55c09ef, processorArchitecture=MSIL">
+      <HintPath>..\packages\Telerik.Licensing.1.9.1\lib\net462\Telerik.Licensing.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.Reporting, Version=20.2.26.812, Culture=neutral, PublicKeyToken=a9d7983dfcc261be, processorArchitecture=MSIL">
+      <HintPath>..\packages\Telerik.Reporting.20.2.26.812\lib\net462\Telerik.Reporting.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.Reporting.OpenXmlRendering.2.7.2, Version=20.2.26.812, Culture=neutral, PublicKeyToken=a9d7983dfcc261be, processorArchitecture=MSIL">
+      <HintPath>..\packages\Telerik.Reporting.20.2.26.812\lib\net462\Telerik.Reporting.OpenXmlRendering.2.7.2.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.Reporting.XpsRendering, Version=20.2.26.812, Culture=neutral, PublicKeyToken=a9d7983dfcc261be, processorArchitecture=MSIL">
+      <HintPath>..\packages\Telerik.Reporting.20.2.26.812\lib\net462\Telerik.Reporting.XpsRendering.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.Abstractions, Version=5.11.6.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
       <HintPath>..\packages\Unity.Abstractions.5.11.6\lib\net48\Unity.Abstractions.dll</HintPath>
     </Reference>
@@ -144,6 +161,7 @@
     <Reference Include="WebActivatorEx, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
       <HintPath>..\packages\WebActivatorEx.2.2.0\lib\net40\WebActivatorEx.dll</HintPath>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Net.Http.Formatting">
@@ -169,6 +187,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\OrdersController.cs" />
     <Compile Include="Controllers\OwnerController.cs" />
+    <Compile Include="Controllers\ReportingController.cs" />
     <Compile Include="Controllers\RestaurantsController.cs" />
     <Compile Include="Controllers\SuperAdminController.cs" />
     <Compile Include="Controllers\UsersController.cs" />
@@ -178,6 +197,7 @@
     <Compile Include="DTOs\Common\ApiResponse.cs" />
     <Compile Include="DTOs\CreateOrderItemDto.cs" />
     <Compile Include="DTOs\CreateOrderRequestDto.cs" />
+    <Compile Include="DTOs\FrequentlyBoughtTogetherDto.cs" />
     <Compile Include="DTOs\LoginRequestDto.cs" />
     <Compile Include="DTOs\LoginResponseDto.cs" />
     <Compile Include="DTOs\MenuItemDto.cs" />
@@ -190,6 +210,8 @@
     <Compile Include="DTOs\RestaurantDto.cs" />
     <Compile Include="DTOs\RestaurantOwnerDto.cs" />
     <Compile Include="DTOs\SignUpRequestDto.cs" />
+    <Compile Include="DTOs\TopOrderedItemDto.cs" />
+    <Compile Include="DTOs\TopOrderedItemsRequestDto.cs" />
     <Compile Include="DTOs\UpdateOrderStatusRequestDto.cs" />
     <Compile Include="DTOs\UpdatePasswordRequestDto.cs" />
     <Compile Include="Enums\OrderStatus.cs" />
@@ -217,22 +239,28 @@
     <Compile Include="Repositories\Implementations\OrderRepository.cs" />
     <Compile Include="Repositories\Implementations\OwnerRepository.cs" />
     <Compile Include="Repositories\Implementations\RefreshTokenRepository.cs" />
+    <Compile Include="Repositories\Implementations\ReportingRepository.cs" />
     <Compile Include="Repositories\Implementations\RestaurantRepository.cs" />
     <Compile Include="Repositories\Implementations\UserRepository.cs" />
     <Compile Include="Repositories\Interfaces\IOrderRepository.cs" />
     <Compile Include="Repositories\Interfaces\IOwnerRepository.cs" />
     <Compile Include="Repositories\Interfaces\IRefreshTokenRepository.cs" />
+    <Compile Include="Repositories\Interfaces\IReportingRepository.cs" />
     <Compile Include="Repositories\Interfaces\IRestaurantRepository.cs" />
     <Compile Include="Repositories\Interfaces\IUserRepository.cs" />
     <Compile Include="Services\Implementations\JwtService.cs" />
     <Compile Include="Services\Implementations\OrderService.cs" />
     <Compile Include="Services\Implementations\OwnerService.cs" />
+    <Compile Include="Services\Implementations\ReportingService.cs" />
+    <Compile Include="Services\Implementations\ReportRenderer.cs" />
     <Compile Include="Services\Implementations\RestaurantService.cs" />
     <Compile Include="Services\Implementations\SuperAdminService.cs" />
     <Compile Include="Services\Implementations\UserService.cs" />
     <Compile Include="Services\Interfaces\IJwtService.cs" />
     <Compile Include="Services\Interfaces\IOrderService.cs" />
     <Compile Include="Services\Interfaces\IOwnerService.cs" />
+    <Compile Include="Services\Interfaces\IReportingService.cs" />
+    <Compile Include="Services\Interfaces\IReportRenderer.cs" />
     <Compile Include="Services\Interfaces\IRestaurantService.cs" />
     <Compile Include="Services\Interfaces\ISuperAdminService.cs" />
     <Compile Include="Services\Interfaces\IUserService.cs" />
@@ -248,7 +276,9 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Reports\" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202608030929438_InitialCreate.resx">
       <DependentUpon>202608030929438_InitialCreate.cs</DependentUpon>
@@ -294,7 +324,9 @@
     <Error Condition="!Exists('..\packages\EntityFramework.6.5.2\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.5.2\build\EntityFramework.props'))" />
     <Error Condition="!Exists('..\packages\EntityFramework.6.5.2\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.5.2\build\EntityFramework.targets'))" />
     <Error Condition="!Exists('..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets'))" />
+    <Error Condition="!Exists('..\packages\Telerik.Licensing.1.9.1\build\Telerik.Licensing.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Telerik.Licensing.1.9.1\build\Telerik.Licensing.targets'))" />
   </Target>
   <Import Project="..\packages\EntityFramework.6.5.2\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.5.2\build\EntityFramework.targets')" />
   <Import Project="..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets" Condition="Exists('..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" />
+  <Import Project="..\packages\Telerik.Licensing.1.9.1\build\Telerik.Licensing.targets" Condition="Exists('..\packages\Telerik.Licensing.1.9.1\build\Telerik.Licensing.targets')" />
 </Project>
