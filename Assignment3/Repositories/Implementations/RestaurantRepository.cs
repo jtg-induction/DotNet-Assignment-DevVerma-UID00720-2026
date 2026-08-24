@@ -42,5 +42,48 @@ namespace Assignment3.Repositories.Implementations
                 .Where(m => m.Restaurant.IsActive)
                 .ToListAsync();
         }
+
+        public async Task<Restaurant> GetRestaurantByEmailAsync(string email)
+        {
+            return await _context.Restaurants
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Email == email);
+        }
+
+        public async Task<Restaurant> GetRestaurantByIdAsync(int restaurantId)
+        {
+            return await _context.Restaurants
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == restaurantId);
+        }
+
+        public async Task<bool> IsRestaurantOwnerAsync(long userId,int restaurantId)
+        {
+            return await _context.RestaurantOwners
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.UserId == userId &&
+                    x.RestaurantId == restaurantId);
+        }
+
+        public void AddRestaurant(Restaurant restaurant)
+        {
+            _context.Restaurants.Add(restaurant);
+        }
+
+        public void AddAddress(Address address)
+        {
+            _context.Addresses.Add(address);
+        }
+
+        public void AddRestaurantOwner(RestaurantOwner restaurantOwner)
+        {
+            _context.RestaurantOwners.Add(restaurantOwner);
+        }
+
+        public async Task SaveAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 }
