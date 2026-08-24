@@ -5,7 +5,6 @@ using Assignment3.DTOs.Common;
 using Assignment3.Models;
 using Assignment3.Repositories.Interfaces;
 using Assignment3.Services.Interfaces;
-using BCrypt.Net;
 using Assignment3.Enums;
 
 namespace Assignment3.Services.Implementations
